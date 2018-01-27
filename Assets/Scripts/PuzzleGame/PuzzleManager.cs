@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class PuzzleManager : Singleton<PuzzleManager> {
 
@@ -16,6 +17,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         { PuzzleTileType.Yellow, "PuzzleGame/PuzzleTileYellow" },
         { PuzzleTileType.Green, "PuzzleGame/PuzzleTileGreen" },
         { PuzzleTileType.Purple, "PuzzleGame/PuzzleTilePurple" },
+        { PuzzleTileType.Junk, "PuzzleGame/PuzzleTileJunk" },
     };
 
     private const float TileWidth = 5f;
@@ -26,6 +28,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     private const int DefaultPuzzleWidth = 8;
     private const int DefaultPuzzleHeight = 12;
     private const float VerticalScrollSpeed = 100f;
+    private const int MinimumMatch = 3;
 
     public GameObject TileContainer;
 
@@ -37,7 +40,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     /// <summary>
     /// Start
     /// </summary>
-    void Start()
+    void Awake()
     {
         // Record the starting position of the scrolling tiles.
         m_tileContainerInitialPosition = TileContainer.transform.position;
@@ -60,7 +63,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         int height = DefaultPuzzleHeight;
 
         // Create a new puzzle.
-        PuzzleGrid = new PuzzleTile[width, 1000];
+        PuzzleGrid = new PuzzleTile[width, 50];
         ResetPuzzle();
 
         // Row 0 is the top, the bottom at the start is equal to the height. Generate 1 row past that.
@@ -70,7 +73,8 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         int rowsToAdd = initialRows;
         for(int row = bottomRow - rowsToAdd; row <= bottomRow; row ++)
         {
-            GenerateRow(row, width);
+            bool isLastRow = row <= bottomRow - 1;
+            GenerateRow(row, width, isLastRow);
         }
     }
 
@@ -86,12 +90,12 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     /// <summary>
     /// Generate all of the tiles in a new row.
     /// </summary>
-    private void GenerateRow(int row, int width)
+    private void GenerateRow(int row, int width, bool canBeMatched = false)
     {
         // Iterate all of the tiles in this row and create them.
         for (int x = 0; x < width; x++)
         {
-            PuzzleTileType tileType = ChooseRandomTile();
+            PuzzleTileType tileType = ChooseRandomNonMatchingTile(x, row);
             PuzzleTile newTile = GenerateTile(tileType, x, row);
             PuzzleGrid[x, row] = newTile;
         }
@@ -110,6 +114,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
 
         puzzleTile.X = x;
         puzzleTile.Y = y;
+        puzzleTile.PuzzleTileType = tileType;
 
         puzzleTile.transform.localPosition = GetLocalPositionOfTileCoordinate(x, y);
 
@@ -142,7 +147,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     /// Get a random tile.
     /// </summary>
     /// <returns></returns>
-    private PuzzleTileType ChooseRandomTile()
+    private PuzzleTileType ChooseRandomNonMatchingTile(int x, int y)
     {
         List<PuzzleTileType> goodTiles = new List<PuzzleTileType>()
         {
@@ -159,8 +164,30 @@ public class PuzzleManager : Singleton<PuzzleManager> {
             PuzzleTileType.Junk
         };
 
-        // Return a random good tile.
-        return goodTiles[Random.Range(0, goodTiles.Count)];
+        // Find a tile that would not make a match at the given position.
+        PuzzleTileType potentialTile;
+        bool foundMatch = false;
+        do
+        {
+            potentialTile = goodTiles[Random.Range(0, goodTiles.Count)];
+            foundMatch = GetMatchesFromTypeAtPosition(potentialTile, x, y, true).Count != 0;
+            if(foundMatch)
+            {
+                goodTiles.Remove(potentialTile);
+            }
+
+            // If we run out of good tiles, put in a bad tile.
+            if(goodTiles.Count == 0)
+            {
+                potentialTile = PuzzleTileType.Junk;
+                break;
+            }
+        }
+        while (foundMatch);
+
+        // Return the tile we found.
+        return potentialTile;
+
     }
 
     /// <summary>
@@ -197,6 +224,99 @@ public class PuzzleManager : Singleton<PuzzleManager> {
                 break;
             }
         }
+    }
 
+    /// <summary>
+    /// If the specified type was at the specified position, return the tiles that would be a match as a result.
+    /// </summary>
+    private List<Vector2> GetMatchesFromTypeAtPosition(PuzzleTileType type, int x, int y, bool ignoreUnmatchableTag = false)
+    {
+        HashSet<Vector2> matchingTiles = new HashSet<Vector2>();
+
+        // Check Row
+        List<Vector2> matchingInRow = new List<Vector2>();
+        int width = DefaultPuzzleWidth;
+        for (int checkX = 0; checkX < width; checkX++)
+        {
+            bool shouldClearList = false;
+            if(checkX == x || 
+                (   PuzzleGrid[checkX, y] != null && 
+                    PuzzleGrid[checkX, y].PuzzleTileType == type && 
+                    (ignoreUnmatchableTag || PuzzleGrid[checkX, y].CanBeMatched)))
+            {
+                matchingInRow.Add(new Vector2(checkX, y));
+            }
+            else
+            {
+                shouldClearList = true;
+            }
+
+            // If the row matched 3 ,
+            // and that match contained our tile,
+            if (matchingInRow.Count >= MinimumMatch)
+            {
+                if (matchingInRow.Any(v => (int)v.x == x))
+                {
+                    // and we hit the end of a row or a new color or an unmatchable tile, then add what we have as a match.
+                    if (checkX == width - 1 ||
+                        (checkX != x && PuzzleGrid[checkX, y] == null) ||
+                        (checkX != x && PuzzleGrid[checkX, y].PuzzleTileType != type) ||
+                        (checkX != x && !ignoreUnmatchableTag && !PuzzleGrid[checkX, y].CanBeMatched))
+                    {
+                        matchingInRow.ForEach(t => matchingTiles.Add(t));
+                        break;
+                    }
+                }
+            }
+
+            if(shouldClearList)
+            {
+                matchingInRow.Clear();
+            }
+        }
+
+        // Check Column
+        List<Vector2> matchingInColumn = new List<Vector2>();
+        int numberToCheck = m_rowsPastTopOfScreen + DefaultPuzzleHeight + 3;
+        for(int checkY = 0; checkY < numberToCheck; checkY++)
+        {
+            bool shouldClearList = false;
+            if (checkY == y || 
+                (   PuzzleGrid[x, checkY] != null &&
+                    PuzzleGrid[x, checkY].PuzzleTileType == type && 
+                    (ignoreUnmatchableTag || PuzzleGrid[x, checkY].CanBeMatched)))
+            {
+                matchingInColumn.Add(new Vector2(x, checkY));
+            }
+            else
+            {
+                shouldClearList = true;
+            }
+
+            // If the column matched at least 3,
+            // and that match contained our tile
+            if (matchingInColumn.Count >= MinimumMatch)
+            {
+                if (matchingInColumn.Any(v => (int)v.y == y))
+                {
+                    // and we hit the end of a column or a new color or an unmatchable tile, then add what we have as a match.
+                    if (checkY == numberToCheck - 1 ||
+                    (checkY != y && PuzzleGrid[x, checkY] == null) ||
+                    (checkY != y && PuzzleGrid[x, checkY].PuzzleTileType != type) ||
+                    (checkY != y && !ignoreUnmatchableTag && !PuzzleGrid[x, checkY].CanBeMatched))
+                    {
+                        matchingInColumn.ForEach(t => matchingTiles.Add(t));
+                        break;
+                    }
+                }
+            }
+
+            if (shouldClearList)
+            {
+                matchingInColumn.Clear();
+            }
+        }
+
+        return new List<Vector2>(matchingTiles);
     }
 }

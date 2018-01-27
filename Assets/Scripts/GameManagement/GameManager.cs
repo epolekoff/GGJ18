@@ -35,7 +35,7 @@ public class GameManager : Singleton<GameManager> {
 
     public void GameOver()
     {
-        Debug.LogError("Hit Top Of Screen!");
+        Debug.LogError("Hit Top Of Screen! Game Over!");
         PuzzleManager.Instance.GameActive = false;
     }
 }
