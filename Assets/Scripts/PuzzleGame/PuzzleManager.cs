@@ -13,8 +13,8 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         { PuzzleTileType.Purple, "PuzzleGame/PuzzleTilePurple" },
     };
 
-    private const float TileWidth = 1f;
-    private const float TileHeight = 1f;
+    private const float TileWidth = 5f;
+    private const float TileHeight = 5f;
 
     private const float MarginX = 0.1f;
     private const float MarginY = 0.1f;
