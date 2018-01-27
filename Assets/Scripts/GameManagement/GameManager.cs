@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class GameManager : Singleton<GameManager> {
 
-    private Dictionary<PuzzleTileType, GameObject> PuzzleTilePrefab;
+    private const int InitialRowCount = 6;
 
     // Use this for initialization
     void Start () {
-        PuzzleManager.Instance.InitializeNewPuzzle(3);
+        PuzzleManager.Instance.InitializeNewPuzzle(InitialRowCount);
         PuzzleManager.Instance.GameActive = true;
     }
 	
@@ -22,7 +22,7 @@ public class GameManager : Singleton<GameManager> {
     /// </summary>
     public void OnGameButtonPressed()
     {
-        PuzzleManager.Instance.InitializeNewPuzzle(3);
+        PuzzleManager.Instance.InitializeNewPuzzle(InitialRowCount);
     }
 
     /// <summary>

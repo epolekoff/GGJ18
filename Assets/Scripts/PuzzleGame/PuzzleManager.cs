@@ -5,6 +5,8 @@ using System.Linq;
 
 public class PuzzleManager : Singleton<PuzzleManager> {
 
+    public delegate void OnTileFallComplete(PuzzleTile tile);
+
     public bool GameActive { get; set; }
 
     public PuzzleTile[,] PuzzleGrid { get; set; }
@@ -77,7 +79,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         int rowsToAdd = initialRows;
         for(int row = bottomRow - rowsToAdd; row <= bottomRow; row ++)
         {
-            bool isLastRow = row <= bottomRow - 1;
+            bool isLastRow = row >= bottomRow;
             GenerateRow(row, width, isLastRow);
         }
     }
@@ -95,13 +97,14 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     /// <summary>
     /// Generate all of the tiles in a new row.
     /// </summary>
-    private void GenerateRow(int row, int width, bool canBeMatched = false)
+    private void GenerateRow(int row, int width, bool isOffscreen = false)
     {
         // Iterate all of the tiles in this row and create them.
         for (int x = 0; x < width; x++)
         {
             PuzzleTileType tileType = ChooseRandomNonMatchingTile(x, row);
             PuzzleTile newTile = GenerateTile(tileType, x, row);
+            newTile.IsOffscreen = isOffscreen;
             PuzzleGrid[x, row] = newTile;
         }
         m_lastAddedRow = row;
@@ -215,8 +218,21 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         // If the number of rows off the top has grown, we need to add a new row at the bottom.
         if(m_rowsPastTopOfScreen != rowsPastTopOfScreen)
         {
-            GenerateRow(m_lastAddedRow + 1, DefaultPuzzleWidth);
+            int bottomRowOnScreen = m_lastAddedRow;
+            GenerateRow(m_lastAddedRow + 1, DefaultPuzzleWidth, true);
             m_rowsPastTopOfScreen = rowsPastTopOfScreen;
+
+            // Set the tiles at the bottom of the screen as Matchable and evaluate them.
+            HashSet<PuzzleTile> matchedTiles = new HashSet<PuzzleTile>();
+            for (int x = 0; x < DefaultPuzzleWidth; x++)
+            {
+                PuzzleGrid[x, bottomRowOnScreen].IsOffscreen = false;
+                var matchesForTile = GetMatchesFromTypeAtPosition(PuzzleGrid[x, bottomRowOnScreen].PuzzleTileType, x, bottomRowOnScreen);
+
+                // Combine the match coordinates into a single list of tiles.
+                matchesForTile.ForEach(v => matchedTiles.Add(PuzzleGrid[(int)v.x, (int)v.y]));
+            }
+            HandleMatches(new List<PuzzleTile>(matchedTiles));
         }
 
         // Check if there are any tiles in the top row. If there are, we may lose the game.
@@ -406,30 +422,43 @@ public class PuzzleManager : Singleton<PuzzleManager> {
             return;
         }
 
-        HashSet<PuzzleTile> potentiallyMatchedTiles = new HashSet<PuzzleTile>();
+        HashSet<PuzzleTile> fallingTiles = new HashSet<PuzzleTile>();
         foreach(var tile in matchedTiles)
         {
             // Get every tile above this one and move it down.
-            PuzzleTile nextTileAbove = PuzzleGrid[tile.X, tile.Y - 1];
-            //while (nextTileAbove != null)
-            //{
-            //    nextTileAbove.Y += 1;
-            //    nextTileAbove.transform.localPosition = GetLocalPositionOfTileCoordinate(nextTileAbove.X, nextTileAbove.Y);
-            //    potentiallyMatchedTiles.Add(nextTileAbove);
-            //    nextTileAbove = PuzzleGrid[nextTileAbove.X, nextTileAbove.Y - 1];
-            //}
+            int currentX = tile.X;
+            int currentY = tile.Y;
+            while (currentY - 1 > 0 && PuzzleGrid[currentX, currentY - 1] != null)
+            {
+                // Update the tile and the grid.
+                PuzzleGrid[currentX, currentY] = PuzzleGrid[currentX, currentY - 1];
+                PuzzleGrid[currentX, currentY - 1] = null;
+                PuzzleGrid[currentX, currentY].Y = currentY;
+                PuzzleGrid[currentX, currentY].TargetFallingLocalPosition = GetLocalPositionOfTileCoordinate(currentX, currentY);
+
+                // Add it to a list to check recursive matches later.
+                fallingTiles.Add(PuzzleGrid[currentX, currentY]);
+
+                currentY -= 1;
+            }
 
             // Destroy the tile.
             GameObject.Destroy(tile.gameObject);
         }
 
+        // Make the tiles start falling
+        foreach (var fallingTile in fallingTiles)
+        {
+            PuzzleGrid[fallingTile.X, fallingTile.Y].FallIntoPosition(HandleRecursiveTilesWhenFallingComplete);
+        }
+    }
+
+    private void HandleRecursiveTilesWhenFallingComplete(PuzzleTile fallingTile)
+    {
         // Now evaluate all matches on the board from falling blocks as a result of these matches.
         HashSet<PuzzleTile> recursivelyMatchedTiles = new HashSet<PuzzleTile>();
-        foreach(var potentialTile in potentiallyMatchedTiles)
-        {
-            var matchesForDraggedTile = GetMatchesFromTypeAtPosition(potentialTile.PuzzleTileType, potentialTile.X, potentialTile.Y);
-            matchesForDraggedTile.ForEach(v => recursivelyMatchedTiles.Add(PuzzleGrid[(int)v.x, (int)v.y]));
-        }
-        //HandleMatches(new List<PuzzleTile>(recursivelyMatchedTiles));
+        var matchesForFallingTile = GetMatchesFromTypeAtPosition(fallingTile.PuzzleTileType, fallingTile.X, fallingTile.Y);
+        matchesForFallingTile.ForEach(v => recursivelyMatchedTiles.Add(PuzzleGrid[(int)v.x, (int)v.y]));
+        HandleMatches(new List<PuzzleTile>(recursivelyMatchedTiles));
     }
 }
