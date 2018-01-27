@@ -27,15 +27,18 @@ public class PuzzleManager : Singleton<PuzzleManager> {
 
     private const int DefaultPuzzleWidth = 8;
     private const int DefaultPuzzleHeight = 12;
-    private const float VerticalScrollSpeed = 100f;
+    private const float VerticalScrollSpeed = 10f;
     private const int MinimumMatch = 3;
 
     public GameObject TileContainer;
+    public GameObject DragCursor;
 
     private List<PuzzleTile> m_createdTiles = new List<PuzzleTile>();
     private Vector3 m_tileContainerInitialPosition;
     private int m_lastAddedRow;
     private int m_rowsPastTopOfScreen = 0;
+
+    private PuzzleTile m_currentHoveredTile;
 
     /// <summary>
     /// Start
@@ -52,6 +55,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     void Update()
     {
         ScrollTilesVertically();
+        UpdateDragCursor();
     }
 
     /// <summary>
@@ -85,6 +89,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     {
         DestroyOldPuzzleTiles();
         TileContainer.transform.position = m_tileContainerInitialPosition;
+        GameActive = true;
     }
 
     /// <summary>
@@ -318,5 +323,113 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         }
 
         return new List<Vector2>(matchingTiles);
+    }
+
+    // Show or hide the cursor.
+    public void EnableDragCursor(bool enabled)
+    {
+        DragCursor.SetActive(enabled);
+    }
+
+    /// <summary>
+    /// The cursor follows the mouse.
+    /// </summary>
+    private void UpdateDragCursor()
+    {
+        var mousePosition = Input.mousePosition;
+        mousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
+        DragCursor.transform.position = new Vector3(mousePosition.x, mousePosition.y, DragCursor.transform.position.z);
+    }
+
+    public void SetCurrentHoveredTile(PuzzleTile tile)
+    {
+        m_currentHoveredTile = tile;
+    }
+
+    public void SwapWithCurrentHoveredTile(PuzzleTile draggedTile)
+    {
+        if(m_currentHoveredTile == null)
+        {
+            return;
+        }
+
+        // Can't swap with itself.
+        if(draggedTile.X == m_currentHoveredTile.X)
+        {
+            return;
+        }
+
+        // Try to swap with the tile on the same row. Not across rows.
+        PuzzleTile tileToSwap = m_currentHoveredTile;
+        if(tileToSwap.Y != draggedTile.Y)
+        {
+            if(PuzzleGrid[tileToSwap.X, draggedTile.Y] != null)
+            {
+                tileToSwap = PuzzleGrid[tileToSwap.X, draggedTile.Y];
+            }
+        }
+
+        // Swap the X values
+        int temp = draggedTile.X;
+        draggedTile.X = tileToSwap.X;
+        tileToSwap.X = temp;
+
+        PuzzleGrid[tileToSwap.X, draggedTile.Y] = tileToSwap;
+        PuzzleGrid[draggedTile.X, draggedTile.Y] = draggedTile;
+
+        // Update the positions
+        draggedTile.transform.localPosition = GetLocalPositionOfTileCoordinate(draggedTile.X, draggedTile.Y);
+        tileToSwap.transform.localPosition = GetLocalPositionOfTileCoordinate(tileToSwap.X, tileToSwap.Y);
+
+        // Check for a match
+        var matchesForDraggedTile = GetMatchesFromTypeAtPosition(draggedTile.PuzzleTileType, draggedTile.X, draggedTile.Y);
+        var matchesForSwappedTile = GetMatchesFromTypeAtPosition(tileToSwap.PuzzleTileType, tileToSwap.X, tileToSwap.Y);
+        Debug.Log("Matches 1: " + matchesForDraggedTile.Count + ", Matches 2: " + matchesForSwappedTile.Count);
+
+        // Combine the match coordinates into a single list of tiles.
+        HashSet<PuzzleTile> matchedTiles = new HashSet<PuzzleTile>();
+        matchesForDraggedTile.ForEach(v => matchedTiles.Add(PuzzleGrid[(int)v.x, (int)v.y]));
+        matchesForSwappedTile.ForEach(v => matchedTiles.Add(PuzzleGrid[(int)v.x, (int)v.y]));
+
+        // Handle the matches
+        HandleMatches(new List<PuzzleTile>(matchedTiles));
+    }
+
+    /// <summary>
+    /// Given a list of tiles that were matches, do something with them!
+    /// </summary>
+    private void HandleMatches(List<PuzzleTile> matchedTiles)
+    {
+        // If there are no matches, return.
+        if(matchedTiles.Count == 0)
+        {
+            return;
+        }
+
+        HashSet<PuzzleTile> potentiallyMatchedTiles = new HashSet<PuzzleTile>();
+        foreach(var tile in matchedTiles)
+        {
+            // Get every tile above this one and move it down.
+            PuzzleTile nextTileAbove = PuzzleGrid[tile.X, tile.Y - 1];
+            //while (nextTileAbove != null)
+            //{
+            //    nextTileAbove.Y += 1;
+            //    nextTileAbove.transform.localPosition = GetLocalPositionOfTileCoordinate(nextTileAbove.X, nextTileAbove.Y);
+            //    potentiallyMatchedTiles.Add(nextTileAbove);
+            //    nextTileAbove = PuzzleGrid[nextTileAbove.X, nextTileAbove.Y - 1];
+            //}
+
+            // Destroy the tile.
+            GameObject.Destroy(tile.gameObject);
+        }
+
+        // Now evaluate all matches on the board from falling blocks as a result of these matches.
+        HashSet<PuzzleTile> recursivelyMatchedTiles = new HashSet<PuzzleTile>();
+        foreach(var potentialTile in potentiallyMatchedTiles)
+        {
+            var matchesForDraggedTile = GetMatchesFromTypeAtPosition(potentialTile.PuzzleTileType, potentialTile.X, potentialTile.Y);
+            matchesForDraggedTile.ForEach(v => recursivelyMatchedTiles.Add(PuzzleGrid[(int)v.x, (int)v.y]));
+        }
+        //HandleMatches(new List<PuzzleTile>(recursivelyMatchedTiles));
     }
 }
