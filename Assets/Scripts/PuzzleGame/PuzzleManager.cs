@@ -48,8 +48,6 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     private int m_lastAddedRow;
     private int m_rowsPastTopOfScreen = 0;
 
-    private PuzzleTile m_currentHoveredTile;
-
     private const float AlarmJunkTime = 3f;
     private float m_alarmTimer = 0f;
     private Coroutine m_alarmCoroutine;
@@ -465,19 +463,6 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         DragCursor.transform.position = new Vector3(mousePosition.x, mousePosition.y, DragCursor.transform.position.z);
     }
 
-    public void SetCurrentHoveredTile(PuzzleTile tile)
-    {
-        m_currentHoveredTile = tile;
-    }
-
-    public void ClearCurrentHoveredTile(PuzzleTile tile)
-    {
-        if(m_currentHoveredTile == tile)
-        {
-            m_currentHoveredTile = null;
-        }
-    }
-
     public void SwapWithCurrentHoveredTile(PuzzleTile draggedTile)
     {
         if(!GameActive)
@@ -485,27 +470,28 @@ public class PuzzleManager : Singleton<PuzzleManager> {
             return;
         }
 
-        if(m_currentHoveredTile == null)
+        // Figure out where the mouse is right now.
+        var mousePosition = Input.mousePosition;
+        mousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
+        Vector2 mouseCoordinates = GetTileCoordinateOfLocalPosition(TileContainer.transform.InverseTransformPoint(mousePosition));
+
+        int mouseX = (int)mouseCoordinates.x;
+        int mouseY = (int)mouseCoordinates.y;
+
+        // Can't swap with itself.
+        if (draggedTile.X == mouseX)
         {
-            SwapWithNull(draggedTile);
             return;
         }
 
-        // Can't swap with itself.
-        if(draggedTile.X == m_currentHoveredTile.X)
+        if (PuzzleGrid[mouseX, draggedTile.Y] == null)
         {
+            SwapWithNull(draggedTile, mouseX, mouseY);
             return;
         }
 
         // Try to swap with the tile on the same row. Not across rows.
-        PuzzleTile tileToSwap = m_currentHoveredTile;
-        if(tileToSwap.Y != draggedTile.Y)
-        {
-            if(PuzzleGrid[tileToSwap.X, draggedTile.Y] != null)
-            {
-                tileToSwap = PuzzleGrid[tileToSwap.X, draggedTile.Y];
-            }
-        }
+        PuzzleTile tileToSwap = PuzzleGrid[mouseX, draggedTile.Y];
 
         // Swap the X values
         int temp = draggedTile.X;
@@ -533,17 +519,10 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         HandleMatches(new List<PuzzleTile>(matchedTiles), 1);
     }
 
-    public void SwapWithNull(PuzzleTile draggedTile)
+    public void SwapWithNull(PuzzleTile draggedTile, int mouseX, int mouseY)
     {
         int currentX = draggedTile.X;
         int currentY = draggedTile.Y;
-
-        // Figure out where the mouse is right now.
-        var mousePosition = Input.mousePosition;
-        mousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
-        Vector2 nullTileCoordinate = GetTileCoordinateOfLocalPosition(TileContainer.transform.InverseTransformPoint(mousePosition));
-
-        int mouseX = (int)nullTileCoordinate.x;
 
         // Only drag off edges next to the tile.
         if (Mathf.Abs(mouseX - currentX) != 1)
