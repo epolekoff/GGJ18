@@ -1,0 +1,7 @@
+!say blu You should talk to Contraption.
+!wait 2500
+!say gre is everything okay?
+!wait 6500
+!say gre trail?
+!wait 4500
+!exit

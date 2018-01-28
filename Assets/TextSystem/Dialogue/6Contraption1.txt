@@ -1,0 +1,25 @@
+!say gre give me the coordinates
+!wait 4000
+!say blu sure thing
+!wait 2000
+!say blu sec, they're sending now
+!wait 8000
+!say blu ...you ready for this last op?
+!wait 3000
+!say gre yes.
+!wait 12000
+!say blu cool.
+!wait 10000
+!say blu files' done
+!wait 6000
+!say blu hey hacker baby, you okay?
+!wait 2000
+!say gre no
+!wait 5000
+!say blu yeah
+!wait 2000
+!say blu did you know trail well?
+!wait 6000
+!say gre about as well as two people on the net could
+!wait 2000
+!exit

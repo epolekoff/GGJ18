@@ -1,0 +1,19 @@
+!say blu Alright, we're into their internal email client. 
+!wait 1900
+!say blu We're looking for a set of keycodes.
+!wait 2100
+!say blu Once we get those we're going straight for the good stuff.
+!wait 1500
+!say blu It looks like they're deploying some new tech.
+!wait 1900
+!say blu You won't be able to engage with it, so just go around.
+!wait 2500
+!say gre ...huh.
+!wait 2300
+!say blu What's up?
+!wait 2000
+!say gre don't worry about it.
+!wait 3300
+!say blu Alright. Good luck.
+!wait 4000
+!end

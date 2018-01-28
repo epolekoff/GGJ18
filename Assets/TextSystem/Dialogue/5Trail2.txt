@@ -1,0 +1,47 @@
+!say gre why would they do this!?
+!wait 1200
+!say gre i mean, even assuming they weren't affected
+!wait 2000
+!say gre what do they have to gain from taking our communications away?
+!wait 1800
+!say gre trail!?
+!wait 3100
+!say blu divide and conquer.
+!wait 1800
+!say gre what?
+!wait 2300
+!say blu we've only gotten this far because we could talk to each other.
+!wait 2100
+!say blu if we hadn't had these phones, we never had a shot.
+!wait 2000
+!say blu nothing snuffs rebellion faster than isloation.
+!wait 4500
+!say gre well, what's changed?
+!wait 2000
+!say gre we still need to kick down the door and wreck their @#!$, right?
+!wait 4500
+!say blu You never switched off the profanity filter?
+!wait 2100
+!say gre I couldn't find it on this phone.
+!wait 6700
+!say blu Hahaha!
+!wait 2000
+!say blu Well, aren't you just the best little hacker : )
+!wait 2300
+!say gre i know my strengths :D.
+!wait 4000
+!say blu Yeah, nothing's changed. I'll break into their server room 
+!say blu and get us access.
+!wait 2000
+!say blu You just need to get us past the firewall again and we can stop all this.
+!wait 4000
+!say gre looking forward to it. 
+!wait 3500
+!say gre you come home safe alright?
+!wait 2700
+!say gre i don't think i could stand talking with contraption
+!say gre alone before they drive me crazy.
+!wait 3500
+!say blu Well, I think we're way past that point :D.
+!wait 4000
+!exit

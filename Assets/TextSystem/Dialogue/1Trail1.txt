@@ -1,10 +1,16 @@
-!say blu Hey, its go time. You ready for this?
+!say blu Hey little hacker, its go time. You ready for this?
 !wait 2500
 !say gre yep
+!wait 1000
+!say gre although i wish you'd stop calling me that
+!wait 2000
+!say blu Well, I think it's cute.
 !wait 2000
 !say blu Our window isn't going to last forever
 !wait 1500
 !say blu Wait for the upgrade from Contraption. He'll set you up.
+!wait 1800
+!say blu Once you have the target's IP, we can begin.
 !wait 1800
 !say gre Got it.
 !wait 6500

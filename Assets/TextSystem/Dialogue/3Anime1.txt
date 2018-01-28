@@ -16,7 +16,9 @@
 !wait 1200
 !say blu they are going to start making their firewall harder to crack
 !wait 1000
-!say blu if you see this new tech ,just go around dont try and mess withit
+!say blu if you see this new tech, just go around 
+!wait 1800
+!say blu dont try and engage with it.
 !wait 3000
 !say gre why should I believe this?
 !wait 1000
@@ -26,9 +28,9 @@
 !wait 2000
 !say blu im' using my son's phone, they trace 
 !say blu mine, look
-!wait 1300
+!wait 2400
 !say blu not everyone who works here agrees with how things are done.
-!wait 2500
+!wait 2100
 !say blu good lcuk.
 !wait 3000
 !say blu i hate these tiny keyboarsd.

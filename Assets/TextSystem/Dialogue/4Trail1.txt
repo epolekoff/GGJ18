@@ -1,0 +1,21 @@
+!say blu Hot DAMN you did it!
+!wait 1400
+!say blu We've got the keycodes to their research.
+!wait 1800
+!say blu We get in there, and we can cripple them.
+!wait 2000
+!say gre did we ever figure out what they're researching?
+!wait 2100
+!say blu We only know what our sources told us.
+!wait 1300
+!say blu They're investigating heavily into comms tech.
+!wait 1200
+!say blu Enough that if the research flops, they'll go bankrupt
+!wait 1900
+!say gre yeah....
+!wait 4500
+!say blu You should go take a break.
+!wait 2100
+!say blu Remember, only one contact or it gets dangerous.
+!wait 2100
+!exit

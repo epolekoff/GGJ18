@@ -1,0 +1,32 @@
+!say blu Howdy
+!wait 3000
+!say blu I'm guessing you're seeing this message since
+!say blu they probably would've found you if we'd messed up.
+!wait 3000
+!say blu I set this message up before the op began.
+!wait 3000
+!say blu The security was increased after all our hacks.
+!wait 3000
+!say blu I scouted a route in but couldn't find one out
+!wait 1500
+!say gre no
+!wait 1500
+!say blu If you're reading this, I didn't make it to the safe house.
+!wait 3000
+!say blu Or I would have turned this auto message off.
+!wait 700
+!say gre stop it
+!wait 2300 
+!say blu you've got the location of the weapon now.
+!wait 3000
+!say blu It's up to you to finish this. 
+!wait 2000
+!say gre please no.
+!wait 1000
+!say blu I know you can do it.
+!wait 2500
+!say gre TRAIL! TRAIL THIS IS A JOKE! RIGHT!?
+!wait 3000
+!say blu Go get em, little hacker.
+!wait 15000
+!exit

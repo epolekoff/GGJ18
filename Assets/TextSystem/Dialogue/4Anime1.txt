@@ -1,0 +1,12 @@
+!say blu you've made them really mad now..
+!say blu I overheard a guy in security mention they know
+!say blu which systems your'e targeting.
+!say blu You're gonna hav eto get in and out much quicker next time.
+!wait 12000
+!say gre do you know anything about the comms research they're doing?
+!wait 8000
+!say gre you there?
+!wait 10000
+!say gre good luck out there.
+!wait 4200
+!exit

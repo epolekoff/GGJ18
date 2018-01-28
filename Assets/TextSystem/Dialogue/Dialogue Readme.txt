@@ -7,11 +7,27 @@ the third is a number designating in which order they are played.  Subsequent nu
 Dialogue Flow:
 1Trace1
 1Contraption1
-Hack 1
+**Hack 1
 2Trace1
 Social Link 1
 2Trace2
 2Contraption1
-Hack 2
+**Hack 2
 -no social link-
 3Anime1
+3Trace1
+**Hack 3
+4Trail1
+Social link 2
+4Anime1
+**Hack 4
+5Trail1
+5Contraption1
+5Trail2
+**Hack 5
+(trail goes missing)
+6Trail1
+6Contraption1
+*Hack 6
+
+gg
