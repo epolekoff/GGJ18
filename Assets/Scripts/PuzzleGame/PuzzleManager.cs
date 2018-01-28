@@ -57,6 +57,8 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     private const float TilesInTopLineTime = 3f;
     private Coroutine m_checkGameOverCoroutine;
 
+    private const float TileTransmitTime = 2f;
+
     /// <summary>
     /// Start
     /// </summary>
@@ -479,7 +481,8 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         int mouseY = (int)mouseCoordinates.y;
 
         // Can't swap with itself.
-        if (draggedTile.X == mouseX)
+        if (draggedTile.X == mouseX ||
+            mouseX < 0 || mouseX >= DefaultPuzzleWidth)
         {
             return;
         }
@@ -492,6 +495,12 @@ public class PuzzleManager : Singleton<PuzzleManager> {
 
         // Try to swap with the tile on the same row. Not across rows.
         PuzzleTile tileToSwap = PuzzleGrid[mouseX, draggedTile.Y];
+
+        // If the tile to swap cannot be swapped, quit now.
+        if(!tileToSwap.CanBeMatched)
+        {
+            return;
+        }
 
         // Swap the X values
         int temp = draggedTile.X;
@@ -560,7 +569,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     /// Look at the blocks under this block and see if it should fall.
     /// If there's nothing below it, set its position to where it is and trigger matches immediately.
     /// </summary>
-    private void CheckUnderBlockAndFall(int tileX, int tileY)
+    private void CheckUnderBlockAndFall(int tileX, int tileY, int comboDepth = 1)
     {
         for (int y = tileY + 1; y < m_lastAddedRow; y++)
         {
@@ -572,12 +581,12 @@ public class PuzzleManager : Singleton<PuzzleManager> {
                 if (newY == tileY)
                 {
                     fallingTile.transform.localPosition = GetLocalPositionOfTileCoordinate(tileX, newY);
-                    HandleRecursiveTilesWhenFallingComplete(fallingTile, 1);
+                    HandleRecursiveTilesWhenFallingComplete(fallingTile, comboDepth);
                 }
                 else
                 {
                     fallingTile.TargetFallingLocalPosition = GetLocalPositionOfTileCoordinate(tileX, newY);
-                    fallingTile.FallIntoPosition(HandleRecursiveTilesWhenFallingComplete, 1);
+                    fallingTile.FallIntoPosition(HandleRecursiveTilesWhenFallingComplete, comboDepth);
                 }
                 break;
             }
@@ -636,25 +645,42 @@ public class PuzzleManager : Singleton<PuzzleManager> {
                 }
             });
         }
-        matchedTiles.AddRange(neighborBadTiles);
 
+        // Start transmitting the matched tiles, to be destroyed later.
+        TransmitTiles(matchedTiles, comboDepth);
+
+        // Destroy the bad neighbors immediately.
+        DestroyMatchedTiles(new List<PuzzleTile>(neighborBadTiles), comboDepth);
+    }
+
+    /// <summary>
+    /// Given some tiles, destroy them and make the tiles above fall.
+    /// </summary>
+    private void DestroyMatchedTiles(List<PuzzleTile> matchedTiles, int comboDepth)
+    {
         // Adjust all of the tiles that need to fall as a result.
         HashSet<PuzzleTile> fallingTiles = new HashSet<PuzzleTile>();
-        foreach(var tile in matchedTiles)
+        foreach (var tile in matchedTiles)
         {
             // Get every tile above this one and move it down.
             int currentX = tile.X;
             int currentY = tile.Y;
-            while (currentY - 1 > 0 && PuzzleGrid[currentX, currentY - 1] != null)
+            while (currentY - 1 > 0 && PuzzleGrid[currentX, currentY - 1] != null && PuzzleGrid[currentX, currentY - 1].CanBeMatched)
             {
+                int belowY = currentY;
+                while (PuzzleGrid[currentX, belowY + 1] == null && belowY < m_lastAddedRow)
+                {
+                    belowY += 1;
+                }
                 // Update the tile and the grid.
-                PuzzleGrid[currentX, currentY] = PuzzleGrid[currentX, currentY - 1];
+                PuzzleGrid[currentX, currentY] = null;
+                PuzzleGrid[currentX, belowY] = PuzzleGrid[currentX, currentY - 1];
                 PuzzleGrid[currentX, currentY - 1] = null;
-                PuzzleGrid[currentX, currentY].Y = currentY;
-                PuzzleGrid[currentX, currentY].TargetFallingLocalPosition = GetLocalPositionOfTileCoordinate(currentX, currentY);
+                PuzzleGrid[currentX, belowY].Y = belowY;
+                PuzzleGrid[currentX, belowY].TargetFallingLocalPosition = GetLocalPositionOfTileCoordinate(currentX, belowY);
 
                 // Add it to a list to check recursive matches later.
-                fallingTiles.Add(PuzzleGrid[currentX, currentY]);
+                fallingTiles.Add(PuzzleGrid[currentX, belowY]);
 
                 currentY -= 1;
             }
@@ -668,10 +694,9 @@ public class PuzzleManager : Singleton<PuzzleManager> {
 
         // Destroy the tile.
         foreach (var tile in matchedTiles)
-        {   
-            DestroyTileDuringMatch(tile);
+        {
+            DestroyTileAfterMatch(tile);
         }
-
 
         // Display the score
         Score += GetScoreFromMatch(matchedTiles, comboDepth);
@@ -686,18 +711,54 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         HandleMatches(new List<PuzzleTile>(recursivelyMatchedTiles), comboDepth + 1);
     }
 
-    private void DestroyTileDuringMatch(PuzzleTile tile)
+    /// <summary>
+    /// Mark tiles as transmitting and destroy them after a delay.
+    /// </summary>
+    /// <param name="tiles"></param>
+    /// <param name="comboDepth"></param>
+    private void TransmitTiles(List<PuzzleTile> tiles, int comboDepth)
     {
-        if(tile.IsOffscreen)
+        tiles.ForEach(t => t.IsTransmitting = true);
+        StartCoroutine(DestroyTransmittedTiles(tiles, comboDepth));
+    }
+
+    /// <summary>
+    /// Coroutine to destroy tiles after a delay.
+    /// </summary>
+    /// <param name="tiles"></param>
+    /// <param name="comboDepth"></param>
+    /// <returns></returns>
+    private IEnumerator DestroyTransmittedTiles(List<PuzzleTile> tiles, int comboDepth)
+    {
+        float timer = 0;
+
+        while(timer < TileTransmitTime)
+        {
+            timer += Time.deltaTime;
+            yield return new WaitForEndOfFrame();
+        }
+        DestroyMatchedTiles(tiles, comboDepth);
+    }
+
+    /// <summary>
+    /// Handle actually destroying the object and triggering alarms and such.
+    /// </summary>
+    /// <param name="tile"></param>
+    private void DestroyTileAfterMatch(PuzzleTile tile)
+    {
+        if (tile.IsOffscreen)
         {
             Debug.Log("Destroying Offscreen Tile");
         }
-        if(tile.PuzzleTileType == PuzzleTileType.Alarm)
+        if (tile.PuzzleTileType == PuzzleTileType.Alarm)
         {
             TriggerAlarm();
         }
 
-        GameObject.Destroy(tile.gameObject);
+        if(tile != null)
+        {
+            GameObject.Destroy(tile.gameObject);
+        }
     }
 
     /// <summary>

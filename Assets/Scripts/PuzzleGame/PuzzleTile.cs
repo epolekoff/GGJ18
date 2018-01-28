@@ -43,7 +43,23 @@ public class PuzzleTile : MonoBehaviour {
         }
     }
     private bool m_isOffscreen;
-    public bool IsTransmitting = false;
+
+    public bool IsTransmitting
+    {
+        get
+        {
+            return m_isTransmitting;
+        }
+        set
+        {
+            if (OffscreenOverlay != null)
+            {
+                OffscreenOverlay.SetActive(value);
+            }
+            m_isTransmitting = value;
+        }
+    }
+    private bool m_isTransmitting;
 
     public Vector3 TargetFallingLocalPosition { get; set; }
 
@@ -137,8 +153,11 @@ public class PuzzleTile : MonoBehaviour {
 
     public void FallIntoPosition(PuzzleManager.OnTileFallComplete callback, int comboDepth)
     {
-        IsFalling = true;
-        StartCoroutine(FallIntoPositionCoroutine(callback, comboDepth));
+        if(!IsFalling)
+        {
+            IsFalling = true;
+            StartCoroutine(FallIntoPositionCoroutine(callback, comboDepth));
+        }
     }
 
     public IEnumerator FallIntoPositionCoroutine(PuzzleManager.OnTileFallComplete callback, int comboDepth)
