@@ -658,6 +658,9 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     /// </summary>
     private void DestroyMatchedTiles(List<PuzzleTile> matchedTiles, int comboDepth)
     {
+        // Before moving them, make sure they are no longer transmitting so we can actually move them.
+        matchedTiles.ForEach(t => t.IsTransmitting = false);
+
         // Adjust all of the tiles that need to fall as a result.
         HashSet<PuzzleTile> fallingTiles = new HashSet<PuzzleTile>();
         foreach (var tile in matchedTiles)
@@ -665,10 +668,10 @@ public class PuzzleManager : Singleton<PuzzleManager> {
             // Get every tile above this one and move it down.
             int currentX = tile.X;
             int currentY = tile.Y;
-            while (currentY - 1 > 0 && PuzzleGrid[currentX, currentY - 1] != null && PuzzleGrid[currentX, currentY - 1].CanBeMatched)
+            while (currentY - 1 > 0 && PuzzleGrid[currentX, currentY - 1] != null && !PuzzleGrid[currentX, currentY - 1].IsTransmitting)
             {
                 int belowY = currentY;
-                while (PuzzleGrid[currentX, belowY + 1] == null && belowY < m_lastAddedRow)
+                while (PuzzleGrid[currentX, belowY + 1] == null && belowY < m_lastAddedRow + 2)
                 {
                     belowY += 1;
                 }
@@ -689,7 +692,10 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         // Make the tiles start falling
         foreach (var fallingTile in fallingTiles)
         {
-            PuzzleGrid[fallingTile.X, fallingTile.Y].FallIntoPosition(HandleRecursiveTilesWhenFallingComplete, comboDepth);
+            if(PuzzleGrid[fallingTile.X, fallingTile.Y] != null)
+            {
+                PuzzleGrid[fallingTile.X, fallingTile.Y].FallIntoPosition(HandleRecursiveTilesWhenFallingComplete, comboDepth);
+            }
         }
 
         // Destroy the tile.

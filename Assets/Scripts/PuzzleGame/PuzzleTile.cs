@@ -68,6 +68,7 @@ public class PuzzleTile : MonoBehaviour {
     private const float SelectedPositionZ = 10f;
     private const float SelectedSizeModifier = 0.1f;
     private const float FallTime = 0.5f;
+    private Coroutine m_fallingCoroutine;
 
     private Vector3 m_initialScale;
     private float m_initialPositionZ;
@@ -153,11 +154,13 @@ public class PuzzleTile : MonoBehaviour {
 
     public void FallIntoPosition(PuzzleManager.OnTileFallComplete callback, int comboDepth)
     {
-        if(!IsFalling)
+        if (m_fallingCoroutine != null)
         {
-            IsFalling = true;
-            StartCoroutine(FallIntoPositionCoroutine(callback, comboDepth));
+            StopCoroutine(m_fallingCoroutine);
         }
+
+        IsFalling = true;
+        m_fallingCoroutine = StartCoroutine(FallIntoPositionCoroutine(callback, comboDepth));
     }
 
     public IEnumerator FallIntoPositionCoroutine(PuzzleManager.OnTileFallComplete callback, int comboDepth)
@@ -181,6 +184,7 @@ public class PuzzleTile : MonoBehaviour {
         }
 
         IsFalling = false;
+        m_fallingCoroutine = null;
         callback(this, comboDepth);
     }
 }
