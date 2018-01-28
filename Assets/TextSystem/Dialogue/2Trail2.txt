@@ -1,0 +1,21 @@
+!say blu Okay, we've breached the first level of security.
+!wait 1200
+!say blu We have a foothold in their systems, but they know we're here.
+!wait 2000
+!say gre so you're telling me this is gonna get bad.
+!wait 1600
+!say blu Not yet. They haven't been able to pinpoint us.
+!wait 1300
+!say gre 'yet?'
+!wait 1300
+!say blu They're defenses may be a little tighter, but this is doable.
+!wait 2000
+!say gre you doing alright over there?
+!wait 1700
+!say blu Yeah, I'm fine.
+!wait 3000
+!say gre don't do anything too dangerous.
+!wait 1800 
+!say blu I think the ship has sailed on that one, friend :D.
+!wait 1500
+!end

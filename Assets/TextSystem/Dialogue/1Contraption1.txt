@@ -1,6 +1,6 @@
 !say blu you the hacker
 !wait 3000
-!say gre yeah. 
+!say gre Contraption? 
 !wait 3000
 !say blu k. i updated your app with the address.
 !wait 2000
@@ -20,6 +20,6 @@
 !wait 3000
 !say blu any questions
 !wait 2000
-!say blu too bad
+!say blu too late
 !wait 3000
 !end

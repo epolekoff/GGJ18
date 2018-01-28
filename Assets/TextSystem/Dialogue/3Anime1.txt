@@ -1,0 +1,34 @@
+!say blu HEllo?
+!wait 2000
+!say blu I believ you are the on hacking Dynainc Corporation
+!wait 1500
+!say blu am i Correct?
+!wait 2400
+!say gre no idea what you're talking about. who's this?
+!wait 1700
+!say blu you dont' have to believe me. but i want to helP!
+!wait 1300
+!say blu I'm an employee at Dynainc.
+!wait 1200
+!say blu your hacking has got the brass in quite the twist.
+!wait 1300
+!say blu I have never see n teh place like this.
+!wait 1200
+!say blu they are going to start making their firewall harder to crack
+!wait 1000
+!say blu if you see this new tech ,just go around dont try and mess withit
+!wait 3000
+!say gre why should I believe this?
+!wait 1000
+!say gre that an employee from the most powerful corp in the world wants to help.
+!wait 1400
+!say gre and that his username is AnimeFan55
+!wait 2000
+!say blu im' using my son's phone, they trace 
+!say blu mine, look
+!wait 1300
+!say blu not everyone who works here agrees with how things are done.
+!wait 2500
+!say blu good lcuk.
+!wait 3000
+!say blu i hate these tiny keyboarsd.

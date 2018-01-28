@@ -122,7 +122,7 @@ public class TextConversation : MonoBehaviour {
                     SpawnBubble(BubbleColors.BLUE, message);
                 }
                 else Debug.LogError("The !say command was used without the proper person tag");
-                Debug.Log("say a thing");
+                //Debug.Log("say a thing");
             }
 
             else if (command.StartsWith("!choice"))

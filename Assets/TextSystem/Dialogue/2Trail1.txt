@@ -4,6 +4,6 @@
 !wait 2000
 !say blu We should try and keep the number of connections to a mininum.
 !wait 1200
-!say blu You can talk to one of us, but anymore might draw attention.
+!say blu You can talk to one person at a time, but anymore might draw attention.
 !wait 2300
 !end

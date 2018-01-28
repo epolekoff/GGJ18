@@ -1,0 +1,17 @@
+!say blu pick up the pace hackling or youre gonna get us all killed
+!wait 1400
+!say gre i'll be sure to get right on that
+!wait 1100
+!say blu dont get snippy with me crapbag
+!wait 1000
+!say blu im only helping you with this because cash
+!wait 1300 
+!say gre noble, aintcha you?
+!wait 1600
+!say blu i wouldn't get pissy if i were you
+!wait 700
+!say blu i built this corps systems myself
+!wait 1300
+!say blu you need me
+!wait 1400
+!say gre you're helping us hack your own system?
