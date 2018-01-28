@@ -9,6 +9,7 @@ public class GameState : AbsState
     {
         GameManager.Instance.GameCanvas.gameObject.SetActive(true);
         GameManager.Instance.GameCanvas.ShowGameUI(true);
+        GameManager.Instance.PhoneCanvas.TerminalWindowText.gameObject.SetActive(true);
     }
 
     public override void Update(IStateMachineEntity entity)

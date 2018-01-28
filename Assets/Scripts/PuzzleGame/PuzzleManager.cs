@@ -15,6 +15,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     public int Score { get; set; }
 
     public Vector3 TileContainerInitialPosition;
+    public GameObject TransmittingBarPrefab;
 
     private static Dictionary<PuzzleTileType, string> PuzzleTileResourceMap = new Dictionary<PuzzleTileType, string>()
     {
@@ -346,7 +347,11 @@ public class PuzzleManager : Singleton<PuzzleManager> {
             timer += Time.deltaTime;
             yield return new WaitForEndOfFrame();
         }
-        GameManager.Instance.GameOver();
+
+        if(GameActive)
+        {
+            GameManager.Instance.GameOver();
+        }
     }
 
     /// <summary>
@@ -487,6 +492,10 @@ public class PuzzleManager : Singleton<PuzzleManager> {
             return;
         }
 
+        // Print some text in the background
+        GameManager.Instance.PhoneCanvas.TerminalWindowText.TriggerAction();
+
+        // Check dragging off of edges.
         if (PuzzleGrid[mouseX, draggedTile.Y] == null)
         {
             SwapWithNull(draggedTile, mouseX, mouseY);
@@ -724,8 +733,14 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     /// <param name="comboDepth"></param>
     private void TransmitTiles(List<PuzzleTile> tiles, int comboDepth)
     {
+        if(!tiles.Any())
+        {
+            return;
+        }
+
         tiles.ForEach(t => t.IsTransmitting = true);
         StartCoroutine(DestroyTransmittedTiles(tiles, comboDepth));
+        CreateTransmittingBar(tiles[0]);
     }
 
     /// <summary>
@@ -869,5 +884,15 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         {
             GameManager.Instance.GameWin();
         }
+    }
+
+    /// <summary>
+    /// Spawn a cool looking loading bar.
+    /// </summary>
+    private void CreateTransmittingBar(PuzzleTile tile)
+    {
+        var barObject = GameObject.Instantiate(TransmittingBarPrefab);
+        barObject.transform.position = tile.transform.position;
+        barObject.GetComponent<TransmittingBar>().SetLifetime(TileTransmitTime);
     }
 }

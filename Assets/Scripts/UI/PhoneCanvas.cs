@@ -14,6 +14,7 @@ public class PhoneCanvas : MonoBehaviour {
     public GameObject ChatButtonNotificationIcon;
 
     public GameObject GameplayBackground;
+    public TerminalWindowText TerminalWindowText;
 
     /// <summary>
     /// Open the game.
