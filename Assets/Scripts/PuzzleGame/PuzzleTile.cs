@@ -94,6 +94,11 @@ public class PuzzleTile : MonoBehaviour {
         PuzzleManager.Instance.SetCurrentHoveredTile(this);
     }
 
+    void OnMouseExit()
+    {
+        PuzzleManager.Instance.ClearCurrentHoveredTile(this);
+    }
+
     private IEnumerator GrowVisual()
     {
         m_isGrown = true;

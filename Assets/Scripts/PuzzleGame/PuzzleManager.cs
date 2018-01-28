@@ -138,7 +138,10 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     {
         foreach(var puzzleTile in m_createdTiles)
         {
-            GameObject.Destroy(puzzleTile.gameObject);
+            if(puzzleTile != null)
+            {
+                GameObject.Destroy(puzzleTile.gameObject);
+            }
         }
         m_createdTiles = new List<PuzzleTile>();
     }
@@ -149,6 +152,16 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     public Vector3 GetLocalPositionOfTileCoordinate(int x, int y)
     {
         return new Vector3(x * (TileWidth + MarginX), -y * (TileHeight + MarginY), 0);
+    }
+
+    /// <summary>
+    /// Given a local space position, get the tile matching.
+    /// </summary>
+    public Vector2 GetTileCoordinateOfLocalPosition(Vector3 position)
+    {
+        int x = Mathf.FloorToInt(position.x / (TileWidth + MarginX));
+        int y = Mathf.FloorToInt(-position.y / (TileHeight + MarginY));
+        return new Vector2(x, y);
     }
 
     /// <summary>
@@ -362,10 +375,19 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         m_currentHoveredTile = tile;
     }
 
+    public void ClearCurrentHoveredTile(PuzzleTile tile)
+    {
+        if(m_currentHoveredTile == tile)
+        {
+            m_currentHoveredTile = null;
+        }
+    }
+
     public void SwapWithCurrentHoveredTile(PuzzleTile draggedTile)
     {
         if(m_currentHoveredTile == null)
         {
+            SwapWithNull(draggedTile);
             return;
         }
 
@@ -409,6 +431,79 @@ public class PuzzleManager : Singleton<PuzzleManager> {
 
         // Handle the matches
         HandleMatches(new List<PuzzleTile>(matchedTiles));
+    }
+
+    public void SwapWithNull(PuzzleTile draggedTile)
+    {
+        int currentX = draggedTile.X;
+        int currentY = draggedTile.Y;
+
+        // Figure out where the mouse is right now.
+        var mousePosition = Input.mousePosition;
+        mousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
+        Vector2 nullTileCoordinate = GetTileCoordinateOfLocalPosition(TileContainer.transform.InverseTransformPoint(mousePosition));
+
+        int mouseX = (int)nullTileCoordinate.x + 1;
+
+        // Only drag off edges next to the tile.
+        if (Mathf.Abs(mouseX - currentX) != 1)
+        {
+            return;
+        }
+
+        // Move the tile to the null space.
+        var slidingTile = MoveTileToNullPosition(currentX, currentY, mouseX, currentY);
+        slidingTile.transform.localPosition = GetLocalPositionOfTileCoordinate(mouseX, currentY);
+
+        // Drop the dragged tile.
+        for (int y = currentY + 1; y < m_lastAddedRow; y++)
+        {
+            if(PuzzleGrid[mouseX, y] != null)
+            {
+                int newY = y - 1;
+                // Go down until we find a non-null. Then back it up one and set that as the position.
+                var fallingTile = MoveTileToNullPosition(mouseX, currentY, mouseX, newY);
+                fallingTile.TargetFallingLocalPosition = GetLocalPositionOfTileCoordinate(mouseX, newY);
+                fallingTile.FallIntoPosition(HandleRecursiveTilesWhenFallingComplete);
+                break;
+            }
+        }
+
+        // Drop all tiles above the null space.
+        if(PuzzleGrid[currentX, currentY - 1] != null)
+        {
+            for (int y = currentY - 1; y > 0; y--)
+            {
+                if (PuzzleGrid[currentX, y] == null)
+                {
+                    break;
+                }
+
+                // Move the tile down one and continue to the next tile.
+                int newY = y + 1;
+                var fallingTile = MoveTileToNullPosition(currentX, y, currentX, newY);
+                fallingTile.TargetFallingLocalPosition = GetLocalPositionOfTileCoordinate(currentX, newY);
+                fallingTile.FallIntoPosition(HandleRecursiveTilesWhenFallingComplete);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Swap a tile with a null tile.
+    /// </summary>
+    private PuzzleTile MoveTileToNullPosition(int oldX, int oldY, int newX, int newY)
+    {
+        // We can only swap with NULL using this function. Return what was already there.
+        if (PuzzleGrid[newX, newY] != null)
+        {
+            return PuzzleGrid[oldX, oldY];
+        }
+
+        PuzzleGrid[newX, newY] = PuzzleGrid[oldX, oldY];
+        PuzzleGrid[newX, newY].X = newX;
+        PuzzleGrid[newX, newY].Y = newY;
+        PuzzleGrid[oldX, oldY] = null;
+        return PuzzleGrid[newX, newY];
     }
 
     /// <summary>
