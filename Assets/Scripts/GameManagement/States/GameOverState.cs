@@ -19,5 +19,6 @@ public class GameOverState : AbsState
     {
         GameManager.Instance.GameCanvas.gameObject.SetActive(false);
         GameManager.Instance.GameCanvas.ShowGameOverUI(false);
+        GameManager.Instance.PhoneCanvas.GameplayBackground.SetActive(false);
     }
 }

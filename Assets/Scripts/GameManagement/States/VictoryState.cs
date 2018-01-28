@@ -19,5 +19,6 @@ public class VictoryState : AbsState
     {
         GameManager.Instance.GameCanvas.gameObject.SetActive(false);
         GameManager.Instance.GameCanvas.ShowVictoryUI(false);
+        GameManager.Instance.PhoneCanvas.GameplayBackground.SetActive(false);
     }
 }

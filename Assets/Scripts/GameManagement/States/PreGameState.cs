@@ -9,6 +9,7 @@ public class PreGameState : AbsState
     {
         GameManager.Instance.GameCanvas.gameObject.SetActive(true);
         GameManager.Instance.GameCanvas.ShowPreGameUI(true);
+        GameManager.Instance.PhoneCanvas.GameplayBackground.SetActive(true);
     }
 
     public override void Update(IStateMachineEntity entity)

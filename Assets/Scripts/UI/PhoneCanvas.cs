@@ -13,6 +13,8 @@ public class PhoneCanvas : MonoBehaviour {
     public GameObject GameButtonNotificationIcon;
     public GameObject ChatButtonNotificationIcon;
 
+    public GameObject GameplayBackground;
+
     /// <summary>
     /// Open the game.
     /// </summary>
