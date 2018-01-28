@@ -50,6 +50,8 @@ public class TextConversation : MonoBehaviour {
     //The TextManager is going to exist in the scene somewhere and be sent the text bubble to display.
     private TextManager textManager;
 
+    private bool initialized = false;
+
     // Use this for initialization
     void Start () {
         if(targetCanvas == null)
@@ -69,12 +71,15 @@ public class TextConversation : MonoBehaviour {
         textSchedule = input.Split('\n').ToList<string>();
         Debug.Log(textSchedule);
 
-        StartCoroutine(PlayConversation());
-
+        if (initialized)
+        {
+            StartCoroutine(PlayConversation());
+        }
     }
 
     public void Initialize(Canvas canvas, string textFileName)
     {
+        initialized = true;
         targetCanvas = canvas;
         this.textFileName = textFileName;
     }
