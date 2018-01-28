@@ -70,11 +70,6 @@ public class PuzzleTile : MonoBehaviour {
 		
 	}
 
-    void OnMouseDrag()
-    {
-        
-    }
-
     void OnMouseUp()
     {
         if (m_isGrown)
@@ -87,7 +82,7 @@ public class PuzzleTile : MonoBehaviour {
 
     void OnMouseDown()
     {
-        if(CanBeMatched)
+        if(PuzzleManager.Instance.GameActive && CanBeMatched)
         {
             m_growCoroutine = StartCoroutine(GrowVisual());
             PuzzleManager.Instance.EnableDragCursor(true);

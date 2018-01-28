@@ -81,7 +81,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         int height = DefaultPuzzleHeight;
 
         // Create a new puzzle.
-        PuzzleGrid = new PuzzleTile[width, 50];
+        PuzzleGrid = new PuzzleTile[width, 1000];
         ResetPuzzle();
 
         // Row 0 is the top, the bottom at the start is equal to the height. Generate 1 row past that.
@@ -106,6 +106,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         GameActive = true;
         ScrollingActive = true;
         Score = 0;
+        m_lastAddedRow = 0;
     }
 
     /// <summary>
@@ -246,13 +247,16 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     private void ScrollTilesVertically()
     {
         // Don't move if the game is not active.
-        if(!GameActive || !ScrollingActive)
+        if(!GameActive)
         {
             return;
         }
 
-        // Move the tiles.
-        TileContainer.transform.position += Vector3.up * VerticalScrollSpeed * Time.deltaTime;
+        if(ScrollingActive)
+        {
+            // Move the tiles.
+            TileContainer.transform.position += Vector3.up * VerticalScrollSpeed * Time.deltaTime;
+        }
 
         // Calculate how many rows of tiles have passed the top of the screen.
         int rowsPastTopOfScreen = Mathf.FloorToInt((TileContainer.transform.position.y - m_tileContainerInitialPosition.y) / ((TileHeight + MarginY) * TileContainer.transform.localScale.y));
@@ -451,6 +455,11 @@ public class PuzzleManager : Singleton<PuzzleManager> {
 
     public void SwapWithCurrentHoveredTile(PuzzleTile draggedTile)
     {
+        if(!GameActive)
+        {
+            return;
+        }
+
         if(m_currentHoveredTile == null)
         {
             SwapWithNull(draggedTile);
@@ -615,7 +624,9 @@ public class PuzzleManager : Singleton<PuzzleManager> {
             neighbors.ForEach(t =>
             {
                 if( t != null && 
-                    (t.PuzzleTileType == PuzzleTileType.Junk || t.PuzzleTileType == PuzzleTileType.Alarm))
+                    (t.PuzzleTileType == PuzzleTileType.Junk || t.PuzzleTileType == PuzzleTileType.Alarm) &&
+                    !matchedTiles.Contains(t) &&
+                    t.CanBeMatched)
                 {
                     neighborBadTiles.Add(t);
                 }
@@ -643,9 +654,6 @@ public class PuzzleManager : Singleton<PuzzleManager> {
 
                 currentY -= 1;
             }
-
-            // Destroy the tile.
-            DestroyTileDuringMatch(tile);
         }
 
         // Make the tiles start falling
@@ -653,6 +661,13 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         {
             PuzzleGrid[fallingTile.X, fallingTile.Y].FallIntoPosition(HandleRecursiveTilesWhenFallingComplete, comboDepth);
         }
+
+        // Destroy the tile.
+        foreach (var tile in matchedTiles)
+        {   
+            DestroyTileDuringMatch(tile);
+        }
+
 
         // Display the score
         Score += GetScoreFromMatch(matchedTiles, comboDepth);
@@ -669,6 +684,10 @@ public class PuzzleManager : Singleton<PuzzleManager> {
 
     private void DestroyTileDuringMatch(PuzzleTile tile)
     {
+        if(tile.IsOffscreen)
+        {
+            Debug.Log("Destroying Offscreen Tile");
+        }
         if(tile.PuzzleTileType == PuzzleTileType.Alarm)
         {
             TriggerAlarm();
