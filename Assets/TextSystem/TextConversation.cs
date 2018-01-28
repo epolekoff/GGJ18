@@ -1,21 +1,30 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using UnityEngine;
 
 public class TextConversation : MonoBehaviour {
 
-    //This will hold each individual schedule. 
+    //This will hold each individual conversation. 
+
+    //Who the conversation is with
+    public Character character;
+
 
     /*
     This list will hold the 'script' for text conversations.
     Commands are as follows:
     !wait number - wait the following number of miliseconds then move to next command
     !say gre/blu string - create a bubble of the chosen color with the text. Green = player side.
+    *NYI* !choice choiceID - Calls a function that gives the player a choice, then calls the next subroutine. 
     !end - trigger the ability to end the conversation
     */
     public List<string> textSchedule;
 
+    //The name of the text file holding the script for this conversation
+    public string textFileName;
 
     //These hold the prefabs for the bubble objects
     public TextBubble smGreenBubble;
@@ -38,12 +47,27 @@ public class TextConversation : MonoBehaviour {
     //This is how many text bubbles we've spawned this conversation.
     private int numberOfBubbles = 0;
 
+    //The TextManager is going to exist in the scene somewhere and be sent the text bubble to display.
+    private TextManager textManager;
 
     // Use this for initialization
     void Start () {
         targetCanvas = FindObjectOfType<Canvas>();
         if (targetCanvas == null)
             Debug.LogError(name + " cannot find a loaded Canvas object.");
+
+        textManager = FindObjectOfType<TextManager>();
+        if (textManager == null)
+            Debug.LogError(name + " cannot find a loaded Canvas object.");
+
+        string path = "Assets/TextSystem/Dialogue/" + textFileName + ".txt";
+        StreamReader reader = new StreamReader(path);
+        string input = reader.ReadToEnd();
+        reader.Close();
+
+        textSchedule = input.Split('\n').ToList<string>();
+        Debug.Log(textSchedule);
+        
     }
 	
 	// Update is called once per frame
@@ -53,10 +77,7 @@ public class TextConversation : MonoBehaviour {
         {
             //Debug.Log("pressed a");
             StartCoroutine(PlayConversation());
-            //PlayConversation();
-            //currentLine++;
         }
-
 	}
 
     public IEnumerator PlayConversation()
@@ -65,9 +86,12 @@ public class TextConversation : MonoBehaviour {
 
         foreach(string command in textSchedule)
         {
+            Debug.Log(command);
+
             if (command.StartsWith("!end"))
             {
-                //end the message
+                //TODO: end the message + automatically return to the list of contacts
+                //This should probably always be preceeded by a !wait so the player can see what was said.
                 Debug.Log("end it");
             }
             else if (command.StartsWith("!wait"))
@@ -88,6 +112,8 @@ public class TextConversation : MonoBehaviour {
                 //spawn a text bubble into the chat interface
                 string input = command.Substring(5);
                 string message = input.Substring(4);
+
+
                 if (input.StartsWith("gre"))
                 {
                     SpawnBubble(BubbleColors.GREEN, message);
@@ -99,7 +125,13 @@ public class TextConversation : MonoBehaviour {
                 else Debug.LogError("The !say command was used without the proper person tag");
                 Debug.Log("say a thing");
             }
-            else Debug.LogError("Malformed command in textSchedule for " + gameObject.name);
+
+            else if (command.StartsWith("!choice"))
+            {
+                //TODO Used to call a choice
+            }
+
+           // else Debug.LogError("Malformed command in textSchedule for " + gameObject.name + ".  The command reads:  " + command);
 
         }
     }
@@ -116,17 +148,22 @@ public class TextConversation : MonoBehaviour {
         numberOfBubbles++;
 
         TextBubble bubble = null;
+        bool isGreen = false;
         int characterCount = message.Length;
 
         if(characterCount <= smallBubbleLimit)
         {
             if (color == BubbleColors.BLUE)
             {
-                bubble = Instantiate(smBlueBubble);
+                isGreen = false;
+                bubble = smBlueBubble;
+                //bubble = Instantiate(smBlueBubble);
             }
             else if (color == BubbleColors.GREEN)
             {
-                bubble = Instantiate(smGreenBubble);
+                isGreen = true;
+                bubble = smGreenBubble;
+                //bubble = Instantiate(smGreenBubble);
             }
             else Debug.LogError("Yo you don't have the right color some how. Way to go.");
 
@@ -135,31 +172,44 @@ public class TextConversation : MonoBehaviour {
         {
             if (color == BubbleColors.BLUE)
             {
-                bubble = Instantiate(lgBlueBubble);
+                isGreen = false;
+                bubble = lgBlueBubble;
+//              bubble = Instantiate(lgBlueBubble);
             }
             else if (color == BubbleColors.GREEN)
             {
-                bubble = Instantiate(lgGreenBubble);
+                isGreen = false;
+                bubble = lgGreenBubble;
+                //bubble = Instantiate(lgGreenBubble);
             }
             else Debug.LogError("Yo you don't have the right color some how. Way to go.");
         }
         else Debug.LogError("The string entered is too long.");
 
-        bubble.transform.parent = targetCanvas.transform;
-        Vector3 v3 = bubble.transform.position;
-        v3.x = 105 * numberOfBubbles;
-        v3.y = 480;
-        bubble.transform.position = v3;
+        //bubble.transform.parent = targetCanvas.transform;
+        textManager.SpawnBox(bubble, message, isGreen);
+        //bubble.transform.SetParent(targetCanvas.transform);
+        //Vector3 v3 = bubble.transform.position;
+        //v3.x = 105 * numberOfBubbles;
+        //v3.y = 480;
+        //bubble.transform.position = v3;
 
         UnityEngine.UI.Text textObject = bubble.GetComponentInChildren<UnityEngine.UI.Text>();
         textObject.text = message;
-
-
+        
     }
 }
 public enum BubbleColors
 {
     GREEN,
     BLUE
+}
+
+public enum Character
+{
+    TRAIL,
+    CONTRAPTION,
+    ANIMEFAN,
+    MYSTERY
 }
  

@@ -1,0 +1,31 @@
+!say blu Hey, its go time. You ready for this?
+!wait 5000
+!say gre yep
+!wait 7000
+!say blu Our window isn't going to last forever
+!wait 4000
+!say blu Wait for the upgrade from Contraption. He'll set you up.
+!wait 1800
+!say gre Got it.
+!wait 12000
+!say gre You nervous?
+!wait 5000
+!say blu No.
+!wait 12000 
+!say blu Really.
+!wait 5000 
+!say blu These people took everything from us. From the entire country.
+!wait 4000
+!say blu They wrung every dollar from us so they could build palaces and armies.
+!wait 3000
+!say blu Now we have a way in, and we have to take it.
+!wait 3000
+!say blu This is our only shot. 
+!wait 11000
+!say blu I can't be nervous. 
+!wait 12000
+!say blu Alright, coast is clear. I'm going to jack into the panel. 
+!wait 5000
+!say blu Be careful, alright?
+!choice
+!end

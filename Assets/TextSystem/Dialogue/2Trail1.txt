@@ -1,0 +1,2 @@
+!say blu Nice! We're in.
+!wait 4000
