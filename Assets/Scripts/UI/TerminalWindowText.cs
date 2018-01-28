@@ -26,9 +26,9 @@ public class TerminalWindowText : MonoBehaviour {
         "Listening on Port 8080...",
         "Sliding on NOPs...",
         "Injecting SQL...",
-        "Reply from 192.54.107.32: bytes=32 time<10ms TTL=255",
-        "Reply from 192.69.142.97: bytes=32 time<100ms TTL=255",
-        "Reply from 192.23.278.54: bytes=32 time<100ms TTL=255",
+        "Reply from 192.54.107.32: bytes=32 time<10ms",
+        "Reply from 192.69.142.97: bytes=32 time<100ms",
+        "Reply from 192.23.278.54: bytes=32 time<10ms",
         "drwxr-xr-x 1 foo123 foo123 2048 Aug 19 13:00",
         "drwx------ 1 bar456 bar456 1024 Jun 8 19:00",
     };
