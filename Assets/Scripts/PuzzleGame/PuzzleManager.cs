@@ -5,12 +5,13 @@ using System.Linq;
 
 public class PuzzleManager : Singleton<PuzzleManager> {
 
-    public delegate void OnTileFallComplete(PuzzleTile tile);
+    public delegate void OnTileFallComplete(PuzzleTile tile, int comboDepth);
 
     public bool GameActive { get; set; }
 
     public PuzzleTile[,] PuzzleGrid { get; set; }
 
+    public int Score { get; set; }
 
     private static Dictionary<PuzzleTileType, string> PuzzleTileResourceMap = new Dictionary<PuzzleTileType, string>()
     {
@@ -69,7 +70,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         int height = DefaultPuzzleHeight;
 
         // Create a new puzzle.
-        PuzzleGrid = new PuzzleTile[width, 50];
+        PuzzleGrid = new PuzzleTile[width, 1000];
         ResetPuzzle();
 
         // Row 0 is the top, the bottom at the start is equal to the height. Generate 1 row past that.
@@ -92,6 +93,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         DestroyOldPuzzleTiles();
         TileContainer.transform.position = m_tileContainerInitialPosition;
         GameActive = true;
+        Score = 0;
     }
 
     /// <summary>
@@ -159,8 +161,8 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     /// </summary>
     public Vector2 GetTileCoordinateOfLocalPosition(Vector3 position)
     {
-        int x = Mathf.FloorToInt(position.x / (TileWidth + MarginX));
-        int y = Mathf.FloorToInt(-position.y / (TileHeight + MarginY));
+        int x = Mathf.FloorToInt((position.x / (TileWidth + MarginX)) + 0.5f);
+        int y = Mathf.FloorToInt((-position.y / (TileHeight + MarginY)) - 0.5f);
         return new Vector2(x, y);
     }
 
@@ -245,7 +247,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
                 // Combine the match coordinates into a single list of tiles.
                 matchesForTile.ForEach(v => matchedTiles.Add(PuzzleGrid[(int)v.x, (int)v.y]));
             }
-            HandleMatches(new List<PuzzleTile>(matchedTiles));
+            HandleMatches(new List<PuzzleTile>(matchedTiles), 1);
         }
 
         // Check if there are any tiles in the top row. If there are, we may lose the game.
@@ -430,7 +432,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         matchesForSwappedTile.ForEach(v => matchedTiles.Add(PuzzleGrid[(int)v.x, (int)v.y]));
 
         // Handle the matches
-        HandleMatches(new List<PuzzleTile>(matchedTiles));
+        HandleMatches(new List<PuzzleTile>(matchedTiles), 1);
     }
 
     public void SwapWithNull(PuzzleTile draggedTile)
@@ -443,7 +445,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         mousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
         Vector2 nullTileCoordinate = GetTileCoordinateOfLocalPosition(TileContainer.transform.InverseTransformPoint(mousePosition));
 
-        int mouseX = (int)nullTileCoordinate.x + 1;
+        int mouseX = (int)nullTileCoordinate.x;
 
         // Only drag off edges next to the tile.
         if (Mathf.Abs(mouseX - currentX) != 1)
@@ -463,8 +465,16 @@ public class PuzzleManager : Singleton<PuzzleManager> {
                 int newY = y - 1;
                 // Go down until we find a non-null. Then back it up one and set that as the position.
                 var fallingTile = MoveTileToNullPosition(mouseX, currentY, mouseX, newY);
-                fallingTile.TargetFallingLocalPosition = GetLocalPositionOfTileCoordinate(mouseX, newY);
-                fallingTile.FallIntoPosition(HandleRecursiveTilesWhenFallingComplete);
+                if (newY == currentY)
+                {
+                    fallingTile.transform.localPosition = GetLocalPositionOfTileCoordinate(mouseX, newY);
+                    HandleRecursiveTilesWhenFallingComplete(fallingTile, 1);
+                }
+                else
+                {
+                    fallingTile.TargetFallingLocalPosition = GetLocalPositionOfTileCoordinate(mouseX, newY);
+                    fallingTile.FallIntoPosition(HandleRecursiveTilesWhenFallingComplete, 1);
+                }
                 break;
             }
         }
@@ -483,7 +493,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
                 int newY = y + 1;
                 var fallingTile = MoveTileToNullPosition(currentX, y, currentX, newY);
                 fallingTile.TargetFallingLocalPosition = GetLocalPositionOfTileCoordinate(currentX, newY);
-                fallingTile.FallIntoPosition(HandleRecursiveTilesWhenFallingComplete);
+                fallingTile.FallIntoPosition(HandleRecursiveTilesWhenFallingComplete, 1);
             }
         }
     }
@@ -509,7 +519,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     /// <summary>
     /// Given a list of tiles that were matches, do something with them!
     /// </summary>
-    private void HandleMatches(List<PuzzleTile> matchedTiles)
+    private void HandleMatches(List<PuzzleTile> matchedTiles, int comboDepth)
     {
         // If there are no matches, return.
         if(matchedTiles.Count == 0)
@@ -544,16 +554,28 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         // Make the tiles start falling
         foreach (var fallingTile in fallingTiles)
         {
-            PuzzleGrid[fallingTile.X, fallingTile.Y].FallIntoPosition(HandleRecursiveTilesWhenFallingComplete);
+            PuzzleGrid[fallingTile.X, fallingTile.Y].FallIntoPosition(HandleRecursiveTilesWhenFallingComplete, comboDepth);
         }
+
+        // Display the score
+        Score += GetScoreFromMatch(matchedTiles, comboDepth);
     }
 
-    private void HandleRecursiveTilesWhenFallingComplete(PuzzleTile fallingTile)
+    private void HandleRecursiveTilesWhenFallingComplete(PuzzleTile fallingTile, int comboDepth)
     {
         // Now evaluate all matches on the board from falling blocks as a result of these matches.
         HashSet<PuzzleTile> recursivelyMatchedTiles = new HashSet<PuzzleTile>();
         var matchesForFallingTile = GetMatchesFromTypeAtPosition(fallingTile.PuzzleTileType, fallingTile.X, fallingTile.Y);
         matchesForFallingTile.ForEach(v => recursivelyMatchedTiles.Add(PuzzleGrid[(int)v.x, (int)v.y]));
-        HandleMatches(new List<PuzzleTile>(recursivelyMatchedTiles));
+        HandleMatches(new List<PuzzleTile>(recursivelyMatchedTiles), comboDepth + 1);
+    }
+
+    /// <summary>
+    /// Get the score from a set of matches.
+    /// </summary>
+    private int GetScoreFromMatch(List<PuzzleTile> matches, int comboDepth)
+    {
+        int score = (int)Mathf.Pow(matches.Count, 2) * comboDepth;
+        return score;
     }
 }

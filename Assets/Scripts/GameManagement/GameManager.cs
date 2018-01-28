@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class GameManager : Singleton<GameManager> {
 
+    public GameCanvas GameCanvas;
+
     private const int InitialRowCount = 6;
 
     // Use this for initialization

@@ -43,7 +43,8 @@ public class PuzzleTile : MonoBehaviour {
 
     public Vector3 TargetFallingLocalPosition { get; set; }
 
-    private const float SelectedResizeSpeed = 0.2f;
+    private const float SelectedGrowSpeed = 0.2f;
+    private const float SelectedShrinkSpeed = 0.1f;
     private const float SelectedPositionZ = 10f;
     private const float SelectedSizeModifier = 0.1f;
     private const float FallTime = 0.5f;
@@ -102,12 +103,12 @@ public class PuzzleTile : MonoBehaviour {
     private IEnumerator GrowVisual()
     {
         m_isGrown = true;
-        float timer = SelectedResizeSpeed;
+        float timer = SelectedGrowSpeed;
         while(timer > 0)
         {
             timer -= Time.deltaTime;
 
-            float ratio = 1-(timer / SelectedResizeSpeed);
+            float ratio = 1-(timer / SelectedGrowSpeed);
 
             Visual.transform.localPosition = new Vector3(
                 Visual.transform.localPosition.x,
@@ -121,12 +122,12 @@ public class PuzzleTile : MonoBehaviour {
 
     private IEnumerator ShrinkVisual()
     {
-        float timer = SelectedResizeSpeed;
+        float timer = SelectedShrinkSpeed;
         while (timer > 0)
         {
             timer -= Time.deltaTime;
 
-            float ratio = timer / SelectedResizeSpeed;
+            float ratio = timer / SelectedShrinkSpeed;
 
             Visual.transform.localPosition = new Vector3(
                 Visual.transform.localPosition.x,
@@ -145,13 +146,13 @@ public class PuzzleTile : MonoBehaviour {
         m_isGrown = false;
     }
 
-    public void FallIntoPosition(PuzzleManager.OnTileFallComplete callback)
+    public void FallIntoPosition(PuzzleManager.OnTileFallComplete callback, int comboDepth)
     {
         IsFalling = true;
-        StartCoroutine(FallIntoPositionCoroutine(callback));
+        StartCoroutine(FallIntoPositionCoroutine(callback, comboDepth));
     }
 
-    public IEnumerator FallIntoPositionCoroutine(PuzzleManager.OnTileFallComplete callback)
+    public IEnumerator FallIntoPositionCoroutine(PuzzleManager.OnTileFallComplete callback, int comboDepth)
     {
         float timer = 0;
 
@@ -172,6 +173,6 @@ public class PuzzleTile : MonoBehaviour {
         }
 
         IsFalling = false;
-        callback(this);
+        callback(this, comboDepth);
     }
 }
