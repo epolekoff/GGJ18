@@ -14,6 +14,8 @@ public class PuzzleManager : Singleton<PuzzleManager> {
 
     public int Score { get; set; }
 
+    public Vector3 TileContainerInitialPosition;
+
     private static Dictionary<PuzzleTileType, string> PuzzleTileResourceMap = new Dictionary<PuzzleTileType, string>()
     {
         { PuzzleTileType.Red, "PuzzleGame/PuzzleTileRed" },
@@ -32,14 +34,17 @@ public class PuzzleManager : Singleton<PuzzleManager> {
 
     private const int DefaultPuzzleWidth = 8;
     private const int DefaultPuzzleHeight = 12;
-    private const float VerticalScrollSpeed = 10f;
+    private float VerticalScrollSpeed;
     private const int MinimumMatch = 3;
+
+    private bool m_shouldSpawnJunk;
+    private bool m_shouldSpawnAlarms;
+    private int ScoreToWin;
 
     public GameObject TileContainer;
     public GameObject DragCursor;
 
     private List<PuzzleTile> m_createdTiles = new List<PuzzleTile>();
-    private Vector3 m_tileContainerInitialPosition;
     private int m_lastAddedRow;
     private int m_rowsPastTopOfScreen = 0;
 
@@ -59,8 +64,6 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     /// </summary>
     void Awake()
     {
-        // Record the starting position of the scrolling tiles.
-        m_tileContainerInitialPosition = TileContainer.transform.position;
     }
 
     /// <summary>
@@ -70,12 +73,13 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     {
         ScrollTilesVertically();
         UpdateDragCursor();
+        CheckScore();
     }
 
     /// <summary>
     /// Generate a new puzzle with some rows. This assumes the puzzle is empty.
     /// </summary>
-    public void InitializeNewPuzzle(int initialRows)
+    public void InitializeNewPuzzle(int initialRows, LevelConfig config)
     {
         int width = DefaultPuzzleWidth;
         int height = DefaultPuzzleHeight;
@@ -83,6 +87,13 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         // Create a new puzzle.
         PuzzleGrid = new PuzzleTile[width, 1000];
         ResetPuzzle();
+
+        // Set some of the variables from the config.
+        VerticalScrollSpeed = config.ScrollSpeed;
+        m_shouldSpawnJunk = config.SpawnJunkTiles;
+        m_shouldSpawnAlarms = config.SpawnAlarmTiles;
+        ScoreToWin = config.ScoreToWin;
+        GameManager.Instance.GameCanvas.UpdateTargetScore(ScoreToWin);
 
         // Row 0 is the top, the bottom at the start is equal to the height. Generate 1 row past that.
         int bottomRow = height + 1;
@@ -102,11 +113,21 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     private void ResetPuzzle()
     {
         DestroyOldPuzzleTiles();
-        TileContainer.transform.position = m_tileContainerInitialPosition;
+        TileContainer.transform.position = TileContainerInitialPosition;
         GameActive = true;
         ScrollingActive = true;
         Score = 0;
         m_lastAddedRow = 0;
+        m_rowsPastTopOfScreen = 0;
+    }
+
+    /// <summary>
+    /// Destroy the puzzle so we can go back to the menu.
+    /// </summary>
+    public void CleanUpCurrentPuzzle()
+    {
+        DestroyOldPuzzleTiles();
+        Score = 0;
     }
 
     /// <summary>
@@ -203,17 +224,20 @@ public class PuzzleManager : Singleton<PuzzleManager> {
             PuzzleTileType.Purple
         };
 
-        List<PuzzleTileType> badTiles = new List<PuzzleTileType>()
-        {
-            PuzzleTileType.Alarm,
-            PuzzleTileType.Junk
-        };
-
         List<PuzzleTileType> typesToSpawn = new List<PuzzleTileType>();
         // Add the good tiles twice so they are more likely to spawn.
         typesToSpawn.AddRange(goodTiles);
         typesToSpawn.AddRange(goodTiles);
-        typesToSpawn.AddRange(badTiles);
+
+        if(m_shouldSpawnAlarms)
+        {
+            typesToSpawn.Add(PuzzleTileType.Alarm);
+        }
+
+        if (m_shouldSpawnJunk)
+        {
+            typesToSpawn.Add(PuzzleTileType.Junk);
+        }
 
         // Find a tile that would not make a match at the given position.
         PuzzleTileType potentialTile;
@@ -259,7 +283,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         }
 
         // Calculate how many rows of tiles have passed the top of the screen.
-        int rowsPastTopOfScreen = Mathf.FloorToInt((TileContainer.transform.position.y - m_tileContainerInitialPosition.y) / ((TileHeight + MarginY) * TileContainer.transform.localScale.y));
+        int rowsPastTopOfScreen = Mathf.FloorToInt((TileContainer.transform.position.y - TileContainerInitialPosition.y) / ((TileHeight + MarginY) * TileContainer.transform.localScale.y));
 
         // If the number of rows off the top has grown, we need to add a new row at the bottom.
         if(m_rowsPastTopOfScreen != rowsPastTopOfScreen)
@@ -305,6 +329,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
             {
                 ScrollingActive = true;
                 StopCoroutine(m_checkGameOverCoroutine);
+                m_checkGameOverCoroutine = null;
             }
         }
     }
@@ -787,5 +812,16 @@ public class PuzzleManager : Singleton<PuzzleManager> {
 
         int score = (int)Mathf.Pow(goodMatches, 2) * comboDepth;
         return score;
+    }
+
+    /// <summary>
+    /// Check if we won the game.
+    /// </summary>
+    private void CheckScore()
+    {
+        if(GameActive && Score > ScoreToWin)
+        {
+            GameManager.Instance.GameWin();
+        }
     }
 }
