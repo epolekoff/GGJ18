@@ -14,6 +14,8 @@ public class LevelConfig {
 
     public int ScoreToWin;
 
+    public float JunkDropRateSeconds;
+
 
     private static readonly LevelConfig[] Levels = new LevelConfig[]
     {
@@ -25,6 +27,7 @@ public class LevelConfig {
             SpawnAlarmTiles = false,
             TimeLimit = 0,
             ScoreToWin = 200,
+            JunkDropRateSeconds = 99999,
         },
 
         // Level 2
@@ -35,6 +38,7 @@ public class LevelConfig {
             SpawnAlarmTiles = false,
             TimeLimit = 0,
             ScoreToWin = 300,
+            JunkDropRateSeconds = 12,
         },
 
         // Level 3
@@ -44,7 +48,8 @@ public class LevelConfig {
             SpawnJunkTiles = true,
             SpawnAlarmTiles = false,
             TimeLimit = 0,
-            ScoreToWin = 400,
+            ScoreToWin = 300,
+            JunkDropRateSeconds = 8,
         },
 
         // Level 4
@@ -54,7 +59,8 @@ public class LevelConfig {
             SpawnJunkTiles = true,
             SpawnAlarmTiles = true,
             TimeLimit = 0,
-            ScoreToWin = 400,
+            ScoreToWin = 300,
+            JunkDropRateSeconds = 15,
         },
 
         // Level 5
@@ -65,6 +71,7 @@ public class LevelConfig {
             SpawnAlarmTiles = true,
             TimeLimit = 0,
             ScoreToWin = 400,
+            JunkDropRateSeconds = 18,
         },
 
         // Level 6
@@ -75,6 +82,7 @@ public class LevelConfig {
             SpawnAlarmTiles = true,
             TimeLimit = 0,
             ScoreToWin = 400,
+            JunkDropRateSeconds = 18,
         }
     };
 

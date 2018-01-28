@@ -24,7 +24,7 @@ public class GameManager : Singleton<GameManager>, IStateMachineEntity {
 
         m_stateMachine = new FiniteStateMachine(new MenuState(), this);
 
-        PuzzleManager.Instance.GameActive = true;
+        //PuzzleManager.Instance.GameActive = true;
     }
 	
 	// Update is called once per frame
