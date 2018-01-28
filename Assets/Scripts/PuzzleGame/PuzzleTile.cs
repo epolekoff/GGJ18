@@ -25,7 +25,7 @@ public class PuzzleTile : MonoBehaviour {
 
     public PuzzleTileType PuzzleTileType = PuzzleTileType.None;
 
-    public bool CanBeMatched { get { return !IsFalling && !IsOffscreen; } }
+    public bool CanBeMatched { get { return !IsFalling && !IsOffscreen && !IsTransmitting; } }
     public bool IsFalling = false;
     public bool IsOffscreen
     {
@@ -35,11 +35,15 @@ public class PuzzleTile : MonoBehaviour {
         }
         set
         {
-            OffscreenOverlay.SetActive(value);
+            if(OffscreenOverlay != null)
+            {
+                OffscreenOverlay.SetActive(value);
+            }
             m_isOffscreen = value;
         }
     }
     private bool m_isOffscreen;
+    public bool IsTransmitting = false;
 
     public Vector3 TargetFallingLocalPosition { get; set; }
 

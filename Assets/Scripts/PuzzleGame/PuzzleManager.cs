@@ -8,6 +8,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     public delegate void OnTileFallComplete(PuzzleTile tile, int comboDepth);
 
     public bool GameActive { get; set; }
+    public bool ScrollingActive { get; set; }
 
     public PuzzleTile[,] PuzzleGrid { get; set; }
 
@@ -21,6 +22,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         { PuzzleTileType.Green, "PuzzleGame/PuzzleTileGreen" },
         { PuzzleTileType.Purple, "PuzzleGame/PuzzleTilePurple" },
         { PuzzleTileType.Junk, "PuzzleGame/PuzzleTileJunk" },
+        { PuzzleTileType.Alarm, "PuzzleGame/PuzzleTileAlarm" },
     };
 
     private const float TileWidth = 5f;
@@ -42,6 +44,15 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     private int m_rowsPastTopOfScreen = 0;
 
     private PuzzleTile m_currentHoveredTile;
+
+    private const float AlarmJunkTime = 3f;
+    private float m_alarmTimer = 0f;
+    private Coroutine m_alarmCoroutine;
+    private int m_currentAlarmJunk = 0;
+    private const int JunkTilesPerAlarm = 5;
+
+    private const float TilesInTopLineTime = 2f;
+    private Coroutine m_checkGameOverCoroutine;
 
     /// <summary>
     /// Start
@@ -70,7 +81,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         int height = DefaultPuzzleHeight;
 
         // Create a new puzzle.
-        PuzzleGrid = new PuzzleTile[width, 1000];
+        PuzzleGrid = new PuzzleTile[width, 50];
         ResetPuzzle();
 
         // Row 0 is the top, the bottom at the start is equal to the height. Generate 1 row past that.
@@ -93,23 +104,30 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         DestroyOldPuzzleTiles();
         TileContainer.transform.position = m_tileContainerInitialPosition;
         GameActive = true;
+        ScrollingActive = true;
         Score = 0;
     }
 
     /// <summary>
     /// Generate all of the tiles in a new row.
     /// </summary>
-    private void GenerateRow(int row, int width, bool isOffscreen = false)
+    private void GenerateRow(int row, int width, bool isOffscreen = false, PuzzleTileType overrideType = PuzzleTileType.None)
     {
         // Iterate all of the tiles in this row and create them.
         for (int x = 0; x < width; x++)
         {
-            PuzzleTileType tileType = ChooseRandomNonMatchingTile(x, row);
+            PuzzleTileType tileType = overrideType;
+            if (tileType == PuzzleTileType.None)
+            {
+                tileType = ChooseRandomNonMatchingTile(x, row);
+            }
             PuzzleTile newTile = GenerateTile(tileType, x, row);
             newTile.IsOffscreen = isOffscreen;
-            PuzzleGrid[x, row] = newTile;
         }
-        m_lastAddedRow = row;
+        if(row > m_lastAddedRow)
+        {
+            m_lastAddedRow = row;
+        }
     }
 
     /// <summary>
@@ -122,11 +140,14 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         PuzzleTile puzzleTile = tileObject.GetComponent<PuzzleTile>();
         m_createdTiles.Add(puzzleTile);
 
+        PuzzleGrid[x, y] = puzzleTile;
         puzzleTile.X = x;
         puzzleTile.Y = y;
         puzzleTile.PuzzleTileType = tileType;
 
+        // Set the position and check if it should fall.
         puzzleTile.transform.localPosition = GetLocalPositionOfTileCoordinate(x, y);
+        CheckUnderBlockAndFall(puzzleTile.X, puzzleTile.Y);
 
         puzzleTile.transform.SetParent(TileContainer.transform, false);
 
@@ -187,20 +208,26 @@ public class PuzzleManager : Singleton<PuzzleManager> {
             PuzzleTileType.Junk
         };
 
+        List<PuzzleTileType> typesToSpawn = new List<PuzzleTileType>();
+        // Add the good tiles twice so they are more likely to spawn.
+        typesToSpawn.AddRange(goodTiles);
+        typesToSpawn.AddRange(goodTiles);
+        typesToSpawn.AddRange(badTiles);
+
         // Find a tile that would not make a match at the given position.
         PuzzleTileType potentialTile;
         bool foundMatch = false;
         do
         {
-            potentialTile = goodTiles[Random.Range(0, goodTiles.Count)];
+            potentialTile = typesToSpawn[Random.Range(0, typesToSpawn.Count)];
             foundMatch = GetMatchesFromTypeAtPosition(potentialTile, x, y, true).Count != 0;
             if(foundMatch)
             {
-                goodTiles.Remove(potentialTile);
+                typesToSpawn.RemoveAll(t => t == potentialTile);
             }
 
             // If we run out of good tiles, put in a bad tile.
-            if(goodTiles.Count == 0)
+            if(typesToSpawn.Count == 0)
             {
                 potentialTile = PuzzleTileType.Junk;
                 break;
@@ -219,7 +246,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     private void ScrollTilesVertically()
     {
         // Don't move if the game is not active.
-        if(!GameActive)
+        if(!GameActive || !ScrollingActive)
         {
             return;
         }
@@ -241,6 +268,10 @@ public class PuzzleManager : Singleton<PuzzleManager> {
             HashSet<PuzzleTile> matchedTiles = new HashSet<PuzzleTile>();
             for (int x = 0; x < DefaultPuzzleWidth; x++)
             {
+                if(PuzzleGrid[x, bottomRowOnScreen] == null)
+                {
+                    continue;
+                }
                 PuzzleGrid[x, bottomRowOnScreen].IsOffscreen = false;
                 var matchesForTile = GetMatchesFromTypeAtPosition(PuzzleGrid[x, bottomRowOnScreen].PuzzleTileType, x, bottomRowOnScreen);
 
@@ -252,14 +283,45 @@ public class PuzzleManager : Singleton<PuzzleManager> {
 
         // Check if there are any tiles in the top row. If there are, we may lose the game.
         int topRow = m_rowsPastTopOfScreen - 1;
+        bool foundTileInTopRow = false;
         for(int x = 0; x < DefaultPuzzleWidth; x++)
         {
             if(topRow >= 0 && PuzzleGrid[x, topRow] != null)
             {
-                GameManager.Instance.GameOver();
+                foundTileInTopRow = true;
+                ScrollingActive = false;
+                if(m_checkGameOverCoroutine == null)
+                {
+                    m_checkGameOverCoroutine = StartCoroutine(CheckGameOverTimerCoroutine());
+                }
                 break;
             }
         }
+
+        // If there are no tiles in the top row, stop trying to end the game.
+        if(!foundTileInTopRow)
+        {
+            if(m_checkGameOverCoroutine != null)
+            {
+                ScrollingActive = true;
+                StopCoroutine(m_checkGameOverCoroutine);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Run a timer to check if the game should end. Give the player some time while the line is at the top of the screen.
+    /// </summary>
+    private IEnumerator CheckGameOverTimerCoroutine()
+    {
+        float timer = 0;
+
+        while(timer < TilesInTopLineTime)
+        {
+            timer += Time.deltaTime;
+            yield return new WaitForEndOfFrame();
+        }
+        GameManager.Instance.GameOver();
     }
 
     /// <summary>
@@ -267,6 +329,12 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     /// </summary>
     private List<Vector2> GetMatchesFromTypeAtPosition(PuzzleTileType type, int x, int y, bool ignoreUnmatchableTag = false)
     {
+        // Don't allow junk pieces to match.
+        if(type == PuzzleTileType.Junk)
+        {
+            return new List<Vector2>();
+        }
+
         HashSet<Vector2> matchingTiles = new HashSet<Vector2>();
 
         // Check Row
@@ -458,29 +526,10 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         slidingTile.transform.localPosition = GetLocalPositionOfTileCoordinate(mouseX, currentY);
 
         // Drop the dragged tile.
-        for (int y = currentY + 1; y < m_lastAddedRow; y++)
-        {
-            if(PuzzleGrid[mouseX, y] != null)
-            {
-                int newY = y - 1;
-                // Go down until we find a non-null. Then back it up one and set that as the position.
-                var fallingTile = MoveTileToNullPosition(mouseX, currentY, mouseX, newY);
-                if (newY == currentY)
-                {
-                    fallingTile.transform.localPosition = GetLocalPositionOfTileCoordinate(mouseX, newY);
-                    HandleRecursiveTilesWhenFallingComplete(fallingTile, 1);
-                }
-                else
-                {
-                    fallingTile.TargetFallingLocalPosition = GetLocalPositionOfTileCoordinate(mouseX, newY);
-                    fallingTile.FallIntoPosition(HandleRecursiveTilesWhenFallingComplete, 1);
-                }
-                break;
-            }
-        }
+        CheckUnderBlockAndFall(mouseX, currentY);
 
         // Drop all tiles above the null space.
-        if(PuzzleGrid[currentX, currentY - 1] != null)
+        if (PuzzleGrid[currentX, currentY - 1] != null)
         {
             for (int y = currentY - 1; y > 0; y--)
             {
@@ -499,13 +548,48 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     }
 
     /// <summary>
+    /// Look at the blocks under this block and see if it should fall.
+    /// If there's nothing below it, set its position to where it is and trigger matches immediately.
+    /// </summary>
+    private void CheckUnderBlockAndFall(int tileX, int tileY)
+    {
+        for (int y = tileY + 1; y < m_lastAddedRow; y++)
+        {
+            if (PuzzleGrid[tileX, y] != null)
+            {
+                int newY = y - 1;
+                // Go down until we find a non-null. Then back it up one and set that as the position.
+                var fallingTile = MoveTileToNullPosition(tileX, tileY, tileX, newY);
+                if (newY == tileY)
+                {
+                    fallingTile.transform.localPosition = GetLocalPositionOfTileCoordinate(tileX, newY);
+                    HandleRecursiveTilesWhenFallingComplete(fallingTile, 1);
+                }
+                else
+                {
+                    fallingTile.TargetFallingLocalPosition = GetLocalPositionOfTileCoordinate(tileX, newY);
+                    fallingTile.FallIntoPosition(HandleRecursiveTilesWhenFallingComplete, 1);
+                }
+                break;
+            }
+        }
+    }
+
+    /// <summary>
     /// Swap a tile with a null tile.
     /// </summary>
     private PuzzleTile MoveTileToNullPosition(int oldX, int oldY, int newX, int newY)
     {
+        // If there's no change, ignore it.
+        if(oldX == newX && oldY == newY)
+        {
+            return PuzzleGrid[oldX, oldY];
+        }
+
         // We can only swap with NULL using this function. Return what was already there.
         if (PuzzleGrid[newX, newY] != null)
         {
+            Debug.LogError("Attemptint to Null-Swap with a non-null");
             return PuzzleGrid[oldX, oldY];
         }
 
@@ -527,6 +611,23 @@ public class PuzzleManager : Singleton<PuzzleManager> {
             return;
         }
 
+        // Add neighboring junk and alarm tiles
+        HashSet<PuzzleTile> neighborBadTiles = new HashSet<PuzzleTile>();
+        foreach(var tile in matchedTiles)
+        {
+            List<PuzzleTile> neighbors = GetAllNeighborsOfTile(tile);
+            neighbors.ForEach(t =>
+            {
+                if( t != null && 
+                    (t.PuzzleTileType == PuzzleTileType.Junk || t.PuzzleTileType == PuzzleTileType.Alarm))
+                {
+                    neighborBadTiles.Add(t);
+                }
+            });
+        }
+        matchedTiles.AddRange(neighborBadTiles);
+
+        // Adjust all of the tiles that need to fall as a result.
         HashSet<PuzzleTile> fallingTiles = new HashSet<PuzzleTile>();
         foreach(var tile in matchedTiles)
         {
@@ -548,7 +649,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
             }
 
             // Destroy the tile.
-            GameObject.Destroy(tile.gameObject);
+            DestroyTileDuringMatch(tile);
         }
 
         // Make the tiles start falling
@@ -570,12 +671,106 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         HandleMatches(new List<PuzzleTile>(recursivelyMatchedTiles), comboDepth + 1);
     }
 
+    private void DestroyTileDuringMatch(PuzzleTile tile)
+    {
+        if(tile.PuzzleTileType == PuzzleTileType.Alarm)
+        {
+            TriggerAlarm();
+        }
+
+        GameObject.Destroy(tile.gameObject);
+    }
+
+    /// <summary>
+    /// Get the neighbors of a tile.
+    /// </summary>
+    private List<PuzzleTile> GetAllNeighborsOfTile(PuzzleTile tile)
+    {
+        List<PuzzleTile> neighbors = new List<PuzzleTile>();
+        if(tile.X > 0)
+            neighbors.Add(PuzzleGrid[tile.X-1, tile.Y]);
+        if(tile.X < DefaultPuzzleWidth-1)
+            neighbors.Add(PuzzleGrid[tile.X+1, tile.Y]);
+        if(tile.Y > 0)
+            neighbors.Add(PuzzleGrid[tile.X, tile.Y-1]);
+        if (tile.Y < 1000)
+            neighbors.Add(PuzzleGrid[tile.X, tile.Y+1]);
+
+        return neighbors;
+    }
+
+    /// <summary>
+    /// Add more junk to the stacking alarm.
+    /// </summary>
+    private void TriggerAlarm()
+    {
+        m_currentAlarmJunk += JunkTilesPerAlarm;
+        if (m_alarmCoroutine == null)
+        {
+            m_alarmCoroutine = StartCoroutine(AlarmCountdownCoroutine());
+        }
+    }
+
+    /// <summary>
+    /// Some number of alarms were triggered, so let them stack up before sending junk.
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator AlarmCountdownCoroutine()
+    {
+        m_alarmTimer = 0;
+        while(m_alarmTimer < AlarmJunkTime)
+        {
+            m_alarmTimer += Time.deltaTime;
+            yield return new WaitForEndOfFrame();
+        }
+
+        // Drop the accumulated junk tiles on the player.
+        DropJunkTilesFromTop(m_currentAlarmJunk);
+        m_currentAlarmJunk = 0;
+
+        m_alarmCoroutine = null;
+    }
+
+    /// <summary>
+    /// Spawn some number of junk tiles at the top of the screen.
+    /// </summary>
+    /// <param name="numberOfTiles"></param>
+    private void DropJunkTilesFromTop(int numberOfTiles)
+    {
+        int numRows = numberOfTiles / DefaultPuzzleWidth;
+        int numLooseTiles = numberOfTiles % DefaultPuzzleWidth;
+
+        int bottomRow = 0;
+        for (int i = 0; i < numRows; i++)
+        {
+            int currentRow = i;
+            GenerateRow(currentRow, DefaultPuzzleWidth, false, PuzzleTileType.Junk);
+            bottomRow = currentRow + 1;
+        }
+
+        List<int> usedPositions = new List<int>();
+        for (int i = 0; i < numLooseTiles; i++)
+        {
+            int x = i;
+            do{
+                x = Random.Range(0, DefaultPuzzleWidth);
+            } while (usedPositions.Contains(x));
+            usedPositions.Add(x);
+            GenerateTile(PuzzleTileType.Junk, x, bottomRow);
+        }
+    }
+
     /// <summary>
     /// Get the score from a set of matches.
     /// </summary>
     private int GetScoreFromMatch(List<PuzzleTile> matches, int comboDepth)
     {
-        int score = (int)Mathf.Pow(matches.Count, 2) * comboDepth;
+        // Ignore alarms and junk in the score.
+        int goodMatches = matches.Count(t =>
+            t.PuzzleTileType != PuzzleTileType.Alarm &&
+            t.PuzzleTileType != PuzzleTileType.Junk);
+
+        int score = (int)Mathf.Pow(goodMatches, 2) * comboDepth;
         return score;
     }
 }
