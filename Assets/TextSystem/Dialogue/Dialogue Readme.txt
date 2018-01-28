@@ -5,17 +5,17 @@ the second part is the name of the character speaking
 the third is a number designating in which order they are played.  Subsequent numbers do not mean play them sequentially.
 
 Dialogue Flow:
-1Trace1
+1Trail1
 1Contraption1
 **Hack 1
-2Trace1
+2Trail1
 Social Link 1
-2Trace2
+2Trail2
 2Contraption1
 **Hack 2
 -no social link-
 3Anime1
-3Trace1
+3Trail1
 **Hack 3
 4Trail1
 Social link 2

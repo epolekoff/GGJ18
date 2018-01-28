@@ -47,9 +47,6 @@ public class TextConversation : MonoBehaviour {
     //This is how many text bubbles we've spawned this conversation.
     private int numberOfBubbles = 0;
 
-    //The TextManager is going to exist in the scene somewhere and be sent the text bubble to display.
-    private TextManager textManager;
-
     private bool initialized = false;
 
     // Use this for initialization
@@ -57,10 +54,6 @@ public class TextConversation : MonoBehaviour {
         if(targetCanvas == null)
             targetCanvas = FindObjectOfType<Canvas>();
         if (targetCanvas == null)
-            Debug.LogError(name + " cannot find a loaded Canvas object.");
-
-        textManager = FindObjectOfType<TextManager>();
-        if (textManager == null)
             Debug.LogError(name + " cannot find a loaded Canvas object.");
 
         string path = "Assets/TextSystem/Dialogue/" + textFileName + ".txt";
@@ -105,7 +98,7 @@ public class TextConversation : MonoBehaviour {
             if (command.StartsWith("!end"))
             {
                 //This should probably always be preceeded by a !wait so the player can see what was said.
-                textManager.EndConversation();
+                TextManager.Instance.EndConversation();
             }
             else if (command.StartsWith("!wait"))
             {
@@ -200,7 +193,7 @@ public class TextConversation : MonoBehaviour {
         else Debug.LogError("The string entered is too long.");
 
         //bubble.transform.parent = targetCanvas.transform;
-        textManager.SpawnBox(bubble, message, isGreen);
+        TextManager.Instance.SpawnBox(bubble, message, isGreen);
 
 
         UnityEngine.UI.Text textObject = bubble.GetComponentInChildren<UnityEngine.UI.Text>();

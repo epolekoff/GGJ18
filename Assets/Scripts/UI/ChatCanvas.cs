@@ -31,5 +31,6 @@ public class ChatCanvas : MonoBehaviour {
 
         // Show the phone screen again.
         GameManager.Instance.PhoneCanvas.ChatScreen.SetActive(true);
+        GameManager.Instance.PhoneCanvas.UpdateChatButtons();
     }
 }

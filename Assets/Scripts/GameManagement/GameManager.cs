@@ -12,7 +12,7 @@ public class GameManager : Singleton<GameManager>, IStateMachineEntity {
     private const int InitialRowCount = 6;
 
     FiniteStateMachine m_stateMachine;
-    private int m_currentLevel = 0;
+    public int CurrentLevel = 0;
 
     // Use this for initialization
     void Start ()
@@ -48,13 +48,15 @@ public class GameManager : Singleton<GameManager>, IStateMachineEntity {
     public void OnGameStartButtonPressed()
     {
         m_stateMachine.ChangeState(new GameState());
-        PuzzleManager.Instance.InitializeNewPuzzle(InitialRowCount, LevelConfig.GetLevel(m_currentLevel));
+        PuzzleManager.Instance.InitializeNewPuzzle(InitialRowCount, LevelConfig.GetLevel(CurrentLevel));
     }
 
     public void ReturnToMenu()
     {
         m_stateMachine.ChangeState(new MenuState());
         PuzzleManager.Instance.CleanUpCurrentPuzzle();
+
+        PhoneCanvas.ShowChatButtonNotification(PhoneCanvas.HasUnreadMessages);
     }
 
     /// <summary>
@@ -82,7 +84,9 @@ public class GameManager : Singleton<GameManager>, IStateMachineEntity {
     {
         Debug.LogError("You win!");
         PuzzleManager.Instance.GameActive = false;
-        m_currentLevel++;
+        CurrentLevel++;
         m_stateMachine.ChangeState(new VictoryState());
+        ProgressManager.Instance.ResetDialogProgress();
+        PhoneCanvas.HasUnreadMessages = true;
     }
 }

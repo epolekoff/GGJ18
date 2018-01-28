@@ -4,47 +4,55 @@ using UnityEngine;
 
 public class ProgressManager : Singleton<ProgressManager> {
 
-    private static Dictionary<int, string> ContraptionMap = new Dictionary<int, string>()
+    private readonly List<string[]> DialogMap = new List<string[]>()
     {
-        { 0, "1Contraption1" },
-        { 1, "2Contraption1" },
-        { 4, "5Contraption1" },
-        { 5, "6Contraption1" },
+        { new string[] { "1Trail1" , "1Contraption1" } },
+        { new string[] { "2Contraption1" } },
+        { new string[] { "3Anime1" , "3Trail2" } },
+        { new string[] { "4Anime1" , "4Trail1" } },
+        { new string[] { "5Trail1" , "5Contraption1" } },
+        { new string[] { "6Trail1" , "6Contraption1" } }
     };
 
-    private static Dictionary<int, string> TrailMap = new Dictionary<int, string>()
-    {
-        { 0, "1Trail1" },
-        { 1, "2Trail1" },
-        { 2, "3Trail2" },
-        { 3, "4Trail1" },
-        { 4, "5Trail1" },
-        { 5, "5Trail2" },
-        { 6, "6Trail1" },
-    };
-
-    private static Dictionary<int, string> AnimeMap = new Dictionary<int, string>()
-    {
-        { 0, "3Anime1" },
-        { 3, "4Anime1" },
-    };
-
-    private static Dictionary<int, string>[] Maps = new Dictionary<int, string>[]
-    {
-        ContraptionMap,
-        TrailMap,
-        AnimeMap
-    };
-
-    private int m_currentProgress;
+    private int m_conversationProgress = 1;
 
     
     /// <summary>
     /// Get the filename of the current text conversation.
     /// </summary>
     /// <returns></returns>
-    public string GetCurrentTextConversationFile(int personIndex)
+    public List<string> GetCurrentTextConversationsForLevel(int levelProgress)
     {
-        return Maps[personIndex][m_currentProgress];
+        string[] conversationsForLevel = DialogMap[levelProgress];
+
+        List<string> currentConversations = new List<string>();
+
+        // Find all conversations at this level that match my conversation progress.
+        for(int i = 0; i < conversationsForLevel.Length; i++)
+        {
+            string filename = conversationsForLevel[i];
+            if (filename.Substring(filename.Length - 1, 1).Equals(m_conversationProgress.ToString()))
+            {
+                currentConversations.Add(filename);
+            }
+        }
+
+        return currentConversations;
+    }
+
+    /// <summary>
+    /// Move forward to the next dialog.
+    /// </summary>
+    public void AdvanceDialogProgress()
+    {
+        m_conversationProgress++;
+    }
+
+    /// <summary>
+    /// Reset back to the first.
+    /// </summary>
+    public void ResetDialogProgress()
+    {
+        m_conversationProgress = 1;
     }
 }
