@@ -15,6 +15,8 @@ public class TextManager : MonoBehaviour {
     //This holds the value of the center of the canvas
     float center;
 
+    //this list holds all the bubbles in the conversation
+    List<TextBubble> playedBubbles;
 
 	// Use this for initialization
 	void Start () {
@@ -26,6 +28,8 @@ public class TextManager : MonoBehaviour {
         RectTransform objectRectTransform = canvas.GetComponent<RectTransform>();
         center = objectRectTransform.rect.width;
         center = center / 2;
+
+        playedBubbles = new List<TextBubble>();
     }
 	
 	// Update is called once per frame
@@ -42,14 +46,38 @@ public class TextManager : MonoBehaviour {
         if(isGreen)
         {
             v3.x = center + centerOffset;
+            v3.y += botOffset;
+            if (tb.isLarge) v3.y += 50;
         } else
         {
             v3.x = center - centerOffset;
+            v3.y += botOffset;
+            if (tb.isLarge) v3.y += 10;
         }
+        RectTransform rt = displayBubble.GetComponent<RectTransform>();
+        ShiftTextBubbles(rt.rect.height);
 
         displayBubble.transform.position = v3;
 
         UnityEngine.UI.Text textObject = displayBubble.GetComponentInChildren<UnityEngine.UI.Text>();
         textObject.text = message;
+
+        playedBubbles.Add(displayBubble);
+    }
+
+    void ShiftTextBubbles(float displacement)
+    {
+        foreach(TextBubble tb in playedBubbles)
+        {
+            Vector3 v3 = tb.transform.position;
+            v3.y += displacement;   
+            tb.transform.position = v3;
+        }
+    }
+
+    //This is called from a !end command
+    public void EndConversation()
+    {
+        //TODO: Should turn off the text message and go back to the contact list
     }
 }

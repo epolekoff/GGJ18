@@ -90,9 +90,8 @@ public class TextConversation : MonoBehaviour {
 
             if (command.StartsWith("!end"))
             {
-                //TODO: end the message + automatically return to the list of contacts
                 //This should probably always be preceeded by a !wait so the player can see what was said.
-                Debug.Log("end it");
+                textManager.EndConversation();
             }
             else if (command.StartsWith("!wait"))
             {
@@ -188,11 +187,7 @@ public class TextConversation : MonoBehaviour {
 
         //bubble.transform.parent = targetCanvas.transform;
         textManager.SpawnBox(bubble, message, isGreen);
-        //bubble.transform.SetParent(targetCanvas.transform);
-        //Vector3 v3 = bubble.transform.position;
-        //v3.x = 105 * numberOfBubbles;
-        //v3.y = 480;
-        //bubble.transform.position = v3;
+
 
         UnityEngine.UI.Text textObject = bubble.GetComponentInChildren<UnityEngine.UI.Text>();
         textObject.text = message;

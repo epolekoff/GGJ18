@@ -1,2 +1,9 @@
 !say blu Nice! We're in.
-!wait 4000
+!wait 1500
+!say blu Let's take a break while we wait for the alarms to cool.
+!wait 2000
+!say blu We should try and keep the number of connections to a mininum.
+!wait 1200
+!say blu You can talk to one of us, but anymore might draw attention.
+!wait 2300
+!end

@@ -6,6 +6,8 @@ public class TextBubble : MonoBehaviour {
 
     //public string bubbleName;
 
+    public bool isLarge = false;
+
 	// Use this for initialization
 	void Start () {
 
