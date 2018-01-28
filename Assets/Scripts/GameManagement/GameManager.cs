@@ -6,7 +6,7 @@ using UnityEngine;
 public class GameManager : Singleton<GameManager>, IStateMachineEntity {
 
     public GameCanvas GameCanvas;
-    public GameObject HomeScreen;
+    public PhoneCanvas PhoneCanvas;
 
     private const int InitialRowCount = 6;
 
@@ -17,7 +17,8 @@ public class GameManager : Singleton<GameManager>, IStateMachineEntity {
     void Start ()
     {
         GameCanvas.gameObject.SetActive(false);
-        HomeScreen.gameObject.SetActive(false);
+        PhoneCanvas.HomeScreen.gameObject.SetActive(false);
+        PhoneCanvas.ChatScreen.gameObject.SetActive(false);
 
         m_stateMachine = new FiniteStateMachine(new MenuState(), this);
 
@@ -59,7 +60,7 @@ public class GameManager : Singleton<GameManager>, IStateMachineEntity {
     /// </summary>
     public void OnChatButtonPressed()
     {
-
+        m_stateMachine.ChangeState(new ChatState());
     }
 
     /// <summary>
