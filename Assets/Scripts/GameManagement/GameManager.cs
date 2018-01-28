@@ -7,6 +7,7 @@ public class GameManager : Singleton<GameManager>, IStateMachineEntity {
 
     public GameCanvas GameCanvas;
     public PhoneCanvas PhoneCanvas;
+    public ChatCanvas ChatCanvas;
 
     private const int InitialRowCount = 6;
 
@@ -19,6 +20,7 @@ public class GameManager : Singleton<GameManager>, IStateMachineEntity {
         GameCanvas.gameObject.SetActive(false);
         PhoneCanvas.HomeScreen.gameObject.SetActive(false);
         PhoneCanvas.ChatScreen.gameObject.SetActive(false);
+        ChatCanvas.gameObject.SetActive(false);
 
         m_stateMachine = new FiniteStateMachine(new MenuState(), this);
 

@@ -30,11 +30,11 @@ public class LevelConfig {
         // Level 2
         new LevelConfig()
         {
-            ScrollSpeed = 11f,
+            ScrollSpeed = 12f,
             SpawnJunkTiles = true,
             SpawnAlarmTiles = false,
             TimeLimit = 0,
-            ScoreToWin = 200,
+            ScoreToWin = 300,
         },
 
         // Level 3
@@ -44,17 +44,17 @@ public class LevelConfig {
             SpawnJunkTiles = true,
             SpawnAlarmTiles = false,
             TimeLimit = 0,
-            ScoreToWin = 200,
+            ScoreToWin = 400,
         },
 
         // Level 4
         new LevelConfig()
         {
-            ScrollSpeed = 13f,
+            ScrollSpeed = 14f,
             SpawnJunkTiles = true,
             SpawnAlarmTiles = true,
             TimeLimit = 0,
-            ScoreToWin = 200,
+            ScoreToWin = 400,
         },
 
         // Level 5
@@ -64,7 +64,7 @@ public class LevelConfig {
             SpawnJunkTiles = true,
             SpawnAlarmTiles = true,
             TimeLimit = 0,
-            ScoreToWin = 200,
+            ScoreToWin = 400,
         },
 
         // Level 6

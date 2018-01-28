@@ -52,7 +52,8 @@ public class TextConversation : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        targetCanvas = FindObjectOfType<Canvas>();
+        if(targetCanvas == null)
+            targetCanvas = FindObjectOfType<Canvas>();
         if (targetCanvas == null)
             Debug.LogError(name + " cannot find a loaded Canvas object.");
 
@@ -67,7 +68,15 @@ public class TextConversation : MonoBehaviour {
 
         textSchedule = input.Split('\n').ToList<string>();
         Debug.Log(textSchedule);
-        
+
+        StartCoroutine(PlayConversation());
+
+    }
+
+    public void Initialize(Canvas canvas, string textFileName)
+    {
+        targetCanvas = canvas;
+        this.textFileName = textFileName;
     }
 	
 	// Update is called once per frame

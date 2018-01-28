@@ -4,7 +4,9 @@ using UnityEngine;
 
 public class TextManager : MonoBehaviour {
 
-    Canvas canvas;
+    public Canvas canvas;
+    public Transform parent;
+    public GameObject CenterBone;
 
     //How far away from the center should the textbox be?
     public float centerOffset = 40;
@@ -21,14 +23,17 @@ public class TextManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-        canvas = FindObjectOfType<Canvas>();
-        if (canvas == null)
-            Debug.LogWarning(name + " cannot find a loaded canvas object");
-
-        RectTransform objectRectTransform = canvas.GetComponent<RectTransform>();
-        center = objectRectTransform.rect.width;
-        center = center / 2;
-
+        if(CenterBone == null)
+        {
+            RectTransform objectRectTransform = canvas.GetComponent<RectTransform>();
+            center = objectRectTransform.rect.width;
+            center = center / 2;
+        }
+        else
+        {
+            center = CenterBone.transform.position.x;
+        }
+        
         playedBubbles = new List<TextBubble>();
     }
 	
@@ -40,7 +45,7 @@ public class TextManager : MonoBehaviour {
     public void SpawnBox(TextBubble tb, string message, bool isGreen)
     {
         TextBubble displayBubble = Instantiate(tb);
-        displayBubble.transform.SetParent(canvas.transform);
+        displayBubble.transform.SetParent(parent ?? canvas.transform);
         Vector3 v3 = displayBubble.transform.position;
         Debug.Log(center);
         if(isGreen)
