@@ -27,8 +27,8 @@ public class PuzzleManager : Singleton<PuzzleManager> {
 
     private const float TileWidth = 5f;
     private const float TileHeight = 5f;
-    private const float MarginX = 0.1f;
-    private const float MarginY = 0.1f;
+    private const float MarginX = 0f;
+    private const float MarginY = 0f;
 
     private const int DefaultPuzzleWidth = 8;
     private const int DefaultPuzzleHeight = 12;
@@ -49,9 +49,9 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     private float m_alarmTimer = 0f;
     private Coroutine m_alarmCoroutine;
     private int m_currentAlarmJunk = 0;
-    private const int JunkTilesPerAlarm = 5;
+    private const int JunkTilesPerAlarm = 3;
 
-    private const float TilesInTopLineTime = 2f;
+    private const float TilesInTopLineTime = 3f;
     private Coroutine m_checkGameOverCoroutine;
 
     /// <summary>
@@ -268,10 +268,6 @@ public class PuzzleManager : Singleton<PuzzleManager> {
             HashSet<PuzzleTile> matchedTiles = new HashSet<PuzzleTile>();
             for (int x = 0; x < DefaultPuzzleWidth; x++)
             {
-                if(PuzzleGrid[x, bottomRowOnScreen] == null)
-                {
-                    continue;
-                }
                 PuzzleGrid[x, bottomRowOnScreen].IsOffscreen = false;
                 var matchesForTile = GetMatchesFromTypeAtPosition(PuzzleGrid[x, bottomRowOnScreen].PuzzleTileType, x, bottomRowOnScreen);
 
