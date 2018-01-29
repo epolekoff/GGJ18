@@ -56,10 +56,11 @@ public class TextConversation : MonoBehaviour {
         if (targetCanvas == null)
             Debug.LogError(name + " cannot find a loaded Canvas object.");
 
-        string path = "Assets/TextSystem/Dialogue/" + textFileName + ".txt";
-        StreamReader reader = new StreamReader(path);
-        string input = reader.ReadToEnd();
-        reader.Close();
+        string path = "Assets/TextSystem/Dialogue/Resources" + textFileName + ".txt";
+        TextAsset asset = Resources.Load(textFileName) as TextAsset;
+        //StreamReader reader = new StreamReader(textFileName);
+        string input = asset.text;
+        //reader.Close();
 
         textSchedule = input.Split('\n').ToList<string>();
         Debug.Log(textSchedule);
