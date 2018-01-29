@@ -1,36 +1,38 @@
-!say blu HEllo?
+!say blu Hello?
 !wait 2000
-!say blu I believ you are the on hacking Dynainc Corporation
+!say blu I believe you are the on hacking Dynainc Corporation
 !wait 1500
 !say blu am i Correct?
 !wait 2400
-!say gre no idea what you're talking about. who's this?
-!wait 1700
-!say blu you dont' have to believe me. but i want to helP!
-!wait 1300
-!say blu I'm an employee at Dynainc.
-!wait 1200
-!say blu your hacking has got the brass in quite the twist.
-!wait 1300
-!say blu I have never see n teh place like this.
-!wait 1200
-!say blu they are going to start making their firewall harder to crack
-!wait 1000
-!say blu if you see this new tech, just go around 
+!say gre nope. who's this?
+!wait 1900
+!say blu I'm an employee at Dynainc. 
 !wait 1800
-!say blu dont try and engage with it.
-!wait 3000
-!say gre why should I believe this?
-!wait 1000
-!say gre that an employee from the most powerful corp in the world wants to help.
-!wait 1400
-!say gre and that his username is AnimeFan55
-!wait 2000
-!say blu im' using my son's phone, they trace 
-!say blu mine, look
-!wait 2400
-!say blu not everyone who works here agrees with how things are done.
+!say blu you dont' have to believe me.
 !wait 2100
-!say blu good lcuk.
+!say blu your hacking has got the brass in quite the twist.
+!wait 2700
+!say blu I've never see n the place like this.
+!wait 2600
+!say blu they are going to start making their firewall harder to crack
+!wait 3100
+!say blu i'd like to help 
+!wait 1800
+!say blu I can provide you with information
+!wait 2800
+!say gre why should I believe this?
+!wait 2200
+!say gre that an employee from the most powerful corp 
+!say gre in the world wants to help hack it.
+!wait 3500
+!say gre and that his username is AnimeFan55
 !wait 3000
-!say blu i hate these tiny keyboarsd.
+!say blu im' using my son's phone, they trace mine.
+!wait 2400
+!say blu Look, not everyone who works here agrees with how things are done.
+!wait 2100
+!say blu Take help where you can get it.
+!wait 2100
+!say blu good luck out there.
+!wait 4000
+!exit

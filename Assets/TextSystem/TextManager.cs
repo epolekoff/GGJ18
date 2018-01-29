@@ -47,7 +47,7 @@ public class TextManager : MonoBehaviour {
         TextBubble displayBubble = Instantiate(tb);
         displayBubble.transform.SetParent(parent ?? canvas.transform);
         Vector3 v3 = displayBubble.transform.position;
-        Debug.Log(center);
+        //Debug.Log(center);
         if(isGreen)
         {
             v3.x = center + centerOffset;

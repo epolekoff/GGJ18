@@ -1,13 +1,13 @@
 !say gre contraption, what's going on
 !wait 2700
 !say blu the bug you got past their systems hit gold
-!wait 1500
+!wait 2200
 !say blu we got the blueprints of what ther building
 !wait 3200
 !say blu they gonna nuke the comms
 !wait 6000
 !say gre what?
-!wait 1200
+!wait 2200
 !say gre nuke? as in, destroy? all of it?
 !wait 3400
 !say blu yup.
@@ -15,15 +15,15 @@
 !say gre but, they'll go that far to stop us from hacking?
 !wait 2300
 !say blu not just hacking my little noob
-!wait 1600
+!wait 2200
 !say blu they gonna blow up the relays. 
-!wait 1300
+!wait 2300
 !say blu no more phones internet
-!wait 1400
+!wait 2200
 !say blu hell the radios prob wont even work anymore
 !wait 3000
 !say blu well?
-!wait 2400
+!wait 4200
 !say blu got anything to say?
-!wait 4500
+!wait 2300
 !exit

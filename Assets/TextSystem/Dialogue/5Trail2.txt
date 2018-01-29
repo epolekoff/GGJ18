@@ -1,13 +1,13 @@
 !say gre why would they do this!?
-!wait 1200
+!wait 2100
 !say gre i mean, even assuming they weren't affected
 !wait 2000
 !say gre what do they have to gain from taking our communications away?
-!wait 1800
+!wait 2100
 !say gre trail!?
 !wait 3100
 !say blu divide and conquer.
-!wait 1800
+!wait 2300
 !say gre what?
 !wait 2300
 !say blu we've only gotten this far because we could talk to each other.
@@ -18,8 +18,10 @@
 !wait 4500
 !say gre well, what's changed?
 !wait 2000
-!say gre we still need to kick down the door and wreck their @#!$, right?
-!wait 4500
+!say gre we still need to kick down the door 
+!wait 500
+!say gre and wreck their @#!$, right?
+!wait 7500
 !say blu You never switched off the profanity filter?
 !wait 2100
 !say gre I couldn't find it on this phone.
@@ -27,7 +29,7 @@
 !say blu Hahaha!
 !wait 2000
 !say blu Well, aren't you just the best little hacker : )
-!wait 2300
+!wait 3200
 !say gre i know my strengths :D.
 !wait 4000
 !say blu Yeah, nothing's changed. I'll break into their server room 

@@ -26,7 +26,7 @@
 !say blu I know you can do it.
 !wait 2500
 !say gre TRAIL! TRAIL THIS IS A JOKE! RIGHT!?
-!wait 3000
+!wait 5000
 !say blu Go get em, little hacker.
 !wait 15000
 !exit

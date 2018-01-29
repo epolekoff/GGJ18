@@ -1,5 +1,5 @@
 !say blu you the hacker
-!wait 3000
+!wait 2300
 !say gre Contraption? 
 !wait 3000
 !say blu k. i updated your app with the address.
@@ -7,19 +7,19 @@
 !say blu just load it up and youll be good to go.
 !wait 2500
 !say gre wait, what? How'd you get access?
-!wait 6000
+!wait 3500
 !say blu the real question is how a hacker has security this bad
-!wait 5000
+!wait 2400
 !say gre its a burner phone!
-!wait 4500
+!wait 2600
 !say blu glad to see you're not a total idiot.
-!wait 4500
+!wait 3300
 !say blu the program is going to visualise firewalls as blocks
 !wait 3000
 !say blu too many blocks and you'll be found and locked out
 !wait 3000
 !say blu any questions
-!wait 2000
+!wait 1800
 !say blu too late
 !wait 3000
 !end

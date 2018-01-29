@@ -8,8 +8,6 @@ Dialogue Flow:
 1Trace1
 1Contraption1
 **Hack 1
-2Trace1
-Social Link 1
 2Trace2
 2Contraption1
 **Hack 2
@@ -18,7 +16,6 @@ Social Link 1
 3Trace1
 **Hack 3
 4Trail1
-Social link 2
 4Anime1
 **Hack 4
 5Trail1

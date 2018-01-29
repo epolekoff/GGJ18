@@ -33,10 +33,10 @@ public class TextConversation : MonoBehaviour {
     public TextBubble lgBlueBubble;
 
     //This is the max number of characters that can go in a small bubble
-    public int smallBubbleLimit = 50;
+    public int smallBubbleLimit = 40;
 
     //This is the max number of characters that can fit in a large bubble
-    public int largeBubbleLimit = 100;
+    public int largeBubbleLimit = 80;
 
     //This will hold whatever the current line we are on, aka the one that should be played next.  
     private int currentLine = 0;
@@ -91,6 +91,14 @@ public class TextConversation : MonoBehaviour {
         {
             //Debug.Log("pressed a");
             StartCoroutine(PlayConversation());
+        }
+
+        if(Debug.isDebugBuild && Input.GetKey(KeyCode.F))
+        {
+            Time.timeScale = 2f;
+        } else if(Debug.isDebugBuild)
+        {
+            Time.timeScale = 1f;
         }
 	}
 

@@ -1,21 +1,21 @@
-!say blu the corp has started tightening its defense
-!wait 1000
-!say green i've heard.
+!say blu the corp has started beefing its defense
+!wait 2100
+!say gre i've heard.
 !wait 1300
 !say blu woah
-!wait 1000
+!wait 1500
 !say blu looks like your good to go
-!wait 1100
+!wait 1700
 !say blu guess you dont need me
-!wait 1000
+!wait 1400
 !say blu ill just leave you alone then
-!wait 3400
+!wait 3000
 !say gre *sigh*
-!wait 1300
-!say gre what did you want to tell me?
-!wait 1200
+!wait 1600
+!say gre is that all you wanted to tell me?
+!wait 2100
 !say gre or did you just want to hack this yourself?
-!wait 1100
+!wait 1700
 !say blu hell no im not putting my ass on the line
 !wait 1400
 !say blu all you dog. enjoy
