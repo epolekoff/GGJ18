@@ -37,19 +37,19 @@ public class LevelConfig {
             SpawnJunkTiles = true,
             SpawnAlarmTiles = false,
             TimeLimit = 0,
-            ScoreToWin = 300,
-            JunkDropRateSeconds = 12,
+            ScoreToWin = 250,
+            JunkDropRateSeconds = 15,
         },
 
         // Level 3
         new LevelConfig()
         {
-            ScrollSpeed = 12f,
+            ScrollSpeed = 13f,
             SpawnJunkTiles = true,
             SpawnAlarmTiles = false,
             TimeLimit = 0,
             ScoreToWin = 300,
-            JunkDropRateSeconds = 8,
+            JunkDropRateSeconds = 15,
         },
 
         // Level 4
@@ -70,8 +70,8 @@ public class LevelConfig {
             SpawnJunkTiles = true,
             SpawnAlarmTiles = true,
             TimeLimit = 0,
-            ScoreToWin = 400,
-            JunkDropRateSeconds = 18,
+            ScoreToWin = 350,
+            JunkDropRateSeconds = 20,
         },
 
         // Level 6
@@ -81,8 +81,8 @@ public class LevelConfig {
             SpawnJunkTiles = true,
             SpawnAlarmTiles = true,
             TimeLimit = 0,
-            ScoreToWin = 400,
-            JunkDropRateSeconds = 18,
+            ScoreToWin = 350,
+            JunkDropRateSeconds = 20,
         }
     };
 
