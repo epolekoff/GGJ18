@@ -60,7 +60,7 @@ public class TextManager : Singleton<TextManager> {
             if (tb.isLarge) v3.y += 10;
         }
         RectTransform rt = displayBubble.GetComponent<RectTransform>();
-        ShiftTextBubbles(rt.rect.height);
+        ShiftTextBubbles(rt.rect.height + 30);
 
         displayBubble.transform.position = v3;
 
