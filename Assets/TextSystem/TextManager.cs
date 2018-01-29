@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TextManager : MonoBehaviour {
+public class TextManager : Singleton<TextManager> {
 
     public Canvas canvas;
     public Transform parent;
@@ -84,5 +84,10 @@ public class TextManager : MonoBehaviour {
     public void EndConversation()
     {
         //TODO: Should turn off the text message and go back to the contact list
+    }
+
+    public void ClearConversation()
+    {
+        playedBubbles = new List<TextBubble>();
     }
 }

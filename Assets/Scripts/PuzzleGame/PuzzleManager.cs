@@ -41,6 +41,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     private bool m_shouldSpawnJunk;
     private bool m_shouldSpawnAlarms;
     private int ScoreToWin;
+    private float m_junkDropRate;
 
     public GameObject TileContainer;
     public GameObject DragCursor;
@@ -54,6 +55,9 @@ public class PuzzleManager : Singleton<PuzzleManager> {
     private Coroutine m_alarmCoroutine;
     private int m_currentAlarmJunk = 0;
     private const int JunkTilesPerAlarm = 3;
+
+    private float m_periodicJunkTimer = 0;
+    private const int JunkTilesPerPeriodicDrop = 4;
 
     private const float TilesInTopLineTime = 3f;
     private Coroutine m_checkGameOverCoroutine;
@@ -75,6 +79,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         ScrollTilesVertically();
         UpdateDragCursor();
         CheckScore();
+        DropJunkOnTimer();
     }
 
     /// <summary>
@@ -95,6 +100,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         m_shouldSpawnAlarms = config.SpawnAlarmTiles;
         ScoreToWin = config.ScoreToWin;
         GameManager.Instance.GameCanvas.UpdateTargetScore(ScoreToWin);
+        m_junkDropRate = config.JunkDropRateSeconds;
 
         // Row 0 is the top, the bottom at the start is equal to the height. Generate 1 row past that.
         int bottomRow = height + 1;
@@ -120,6 +126,7 @@ public class PuzzleManager : Singleton<PuzzleManager> {
         Score = 0;
         m_lastAddedRow = 0;
         m_rowsPastTopOfScreen = 0;
+        m_periodicJunkTimer = 0;
     }
 
     /// <summary>
@@ -858,6 +865,24 @@ public class PuzzleManager : Singleton<PuzzleManager> {
             } while (usedPositions.Contains(x));
             usedPositions.Add(x);
             GenerateTile(PuzzleTileType.Junk, x, bottomRow);
+        }
+    }
+
+    /// <summary>
+    /// Every couple of seconds, drop some junk.
+    /// </summary>
+    private void DropJunkOnTimer()
+    {
+        if(!GameActive)
+        {
+            return;
+        }
+
+        m_periodicJunkTimer += Time.deltaTime;
+        if(m_periodicJunkTimer >= m_junkDropRate)
+        {
+            DropJunkTilesFromTop(JunkTilesPerPeriodicDrop);
+            m_periodicJunkTimer = 0;
         }
     }
 
