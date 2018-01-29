@@ -12,7 +12,11 @@ public class GameManager : Singleton<GameManager>, IStateMachineEntity {
     private const int InitialRowCount = 6;
 
     FiniteStateMachine m_stateMachine;
-    public int CurrentLevel = 0;
+
+    public int CurrentLevel { get { return m_currentLevel; } set { m_currentLevel = value; } }
+    private int m_currentLevel = 0;
+
+    public int MaxLevel = 6;
 
     // Use this for initialization
     void Start ()
@@ -30,6 +34,11 @@ public class GameManager : Singleton<GameManager>, IStateMachineEntity {
 	// Update is called once per frame
 	void Update () {
         m_stateMachine.Update();
+
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
+        }
     }
 
     public FiniteStateMachine GetStateMachine(int number = 0)

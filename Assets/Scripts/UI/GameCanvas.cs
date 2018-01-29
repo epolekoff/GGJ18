@@ -11,6 +11,7 @@ public class GameCanvas : MonoBehaviour {
     public GameObject PreGameUI;
     public GameObject GameOverUI;
     public GameObject VictoryUI;
+    public GameObject TotalVictoryUI;
     public GameObject GameUI;
 
     private const string ScoreTextPrefix = "Score:";
@@ -64,6 +65,15 @@ public class GameCanvas : MonoBehaviour {
     public void ShowVictoryUI(bool show)
     {
         VictoryUI.SetActive(show);
+    }
+
+    /// <summary>
+    /// Victory
+    /// </summary>
+    /// <param name="show"></param>
+    public void ShowTotalVictoryUI(bool show)
+    {
+        TotalVictoryUI.SetActive(show);
     }
 
     /// <summary>

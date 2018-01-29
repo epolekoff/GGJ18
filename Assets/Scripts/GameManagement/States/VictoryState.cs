@@ -7,7 +7,14 @@ public class VictoryState : AbsState
 {
     public override void Enter(IStateMachineEntity entity)
     {
-        GameManager.Instance.GameCanvas.ShowVictoryUI(true);
+        if(GameManager.Instance.CurrentLevel < GameManager.Instance.MaxLevel)
+        {
+            GameManager.Instance.GameCanvas.ShowVictoryUI(true);
+        }
+        else
+        {
+            GameManager.Instance.GameCanvas.ShowTotalVictoryUI(true);
+        }
     }
 
     public override void Update(IStateMachineEntity entity)
